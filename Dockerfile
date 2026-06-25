@@ -9,4 +9,4 @@ RUN mkdir -p backend/uploads && chmod 775 backend/uploads
 
 EXPOSE 8080
 
-CMD ["php", "-S", "0.0.0.0:8080", "router.php"]
+CMD php -S 0.0.0.0:${PORT:-8080} router.php
