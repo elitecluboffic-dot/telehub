@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="google-site-verification" content="BBp2w9iwK4Jc2_JDwkuMIi5hK8W_DC6V6r2d0f2005o" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- ═══ SEO PRIMARY ═══ -->
+  <title>TeleBoard – Direktori Server Telegram Terlengkap di Indonesia</title>
+  <meta name="description" content="Temukan ribuan server dan grup Telegram terbaik di Indonesia. Bergabung komunitas gaming, anime, crypto, teknologi, dan lebih banyak lagi di TeleBoard."/>
+  <meta name="keywords" content="server telegram, grup telegram, direktori telegram, komunitas telegram, telegram indonesia, telegram gaming, telegram anime, telegram crypto"/>
+  <meta name="author" content="TeleBoard"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://telehub.nfy.fyi"/>
+
+  <!-- ═══ OPEN GRAPH (Facebook, WhatsApp, Discord) ═══ -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://telehub.nfy.fyi"/>
+  <meta property="og:title" content="TeleBoard – Direktori Server Telegram Terlengkap"/>
+  <meta property="og:description" content="Temukan ribuan server dan grup Telegram terbaik. Bergabung komunitas gaming, anime, crypto, teknologi di TeleBoard."/>
+  <meta property="og:image" content="https://telehub.nfy.fyi/og-image.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:locale" content="id_ID"/>
+  <meta property="og:site_name" content="TeleBoard"/>
+
+  <!-- ═══ TWITTER CARD ═══ -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:url" content="https://telehub.nfy.fyi"/>
+  <meta name="twitter:title" content="TeleBoard – Direktori Server Telegram Terlengkap"/>
+  <meta name="twitter:description" content="Temukan ribuan server dan grup Telegram terbaik. Bergabung komunitas gaming, anime, crypto, teknologi di TeleBoard."/>
+  <meta name="twitter:image" content="https://telehub.nfy.fyi/Logo-Telehub.png"/>
+
+  <!-- ═══ FAVICON ═══ -->
+  <link rel="icon" type="image/png" sizes="70x70" href="/telehub-70.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/telehub-16.png"/>
+  <link rel="icon" type="image/png" sizes="72x72" href="/telehub-72.png"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/telehub-57.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#2196f3"/>
+
+  <!-- ═══ SCHEMA.ORG (Google Rich Results) ═══ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TeleBoard",
+    "url": "https://telehub.nfy.fyi",
+    "description": "Direktori server dan grup Telegram terlengkap di Indonesia",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://telehub.nfy.fyi?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card: #1c2333;
+      --border: #30363d;
+      --accent: #2196f3;
+      --accent2: #00bcd4;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --green: #3fb950;
+      --star: #f0c040;
+      --danger: #f85149;
+      --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px; background: var(--surface); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--accent); text-decoration: none; flex-shrink: 0; }
+    .nav-logo svg { width: 32px; height: 32px; }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a.nav-text { color: var(--muted); text-decoration: none; font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; transition: all .2s; white-space: nowrap; }
+    .nav-links a.nav-text:hover { color: var(--text); background: var(--card); }
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #1a7fd4; }
+    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-outline:hover { background: var(--accent); color: #fff; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; overflow: hidden; cursor: pointer; flex-shrink: 0; }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-statistik { background: linear-gradient(90deg, #2196f3, #00bcd4, #3fb950, #f0c040, #2196f3); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradientMove 3s linear infinite; font-weight: 600; }
+    @keyframes gradientMove { 0%{ background-position: 0% center; } 100%{ background-position: 200% center; } }
+
+    /* HERO */
+    .hero { text-align: center; padding: 72px 24px 40px; }
+    .hero-badge { display: inline-block; background: rgba(33,150,243,.15); color: var(--accent); border: 1px solid rgba(33,150,243,.3); border-radius: 99px; padding: 4px 14px; font-size: 0.78rem; font-weight: 600; letter-spacing: .5px; margin-bottom: 20px; }
+    .hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700; line-height: 1.15; margin-bottom: 16px; }
+    .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--muted); max-width: 520px; margin: 0 auto 32px; line-height: 1.7; }
+    .hero-search { display: flex; max-width: 500px; margin: 0 auto 24px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .hero-search input { flex: 1; background: none; border: none; outline: none; color: var(--text); padding: 14px 16px; font-size: 0.95rem; min-width: 0; }
+    .hero-search button { background: var(--accent); border: none; color: #fff; padding: 0 20px; cursor: pointer; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+    .hero-stats { display: flex; justify-content: center; gap: 32px; margin-top: 32px; }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    /* FILTERS */
+    .filters { display: flex; align-items: center; gap: 10px; padding: 0 32px 20px; flex-wrap: wrap; }
+    .filter-chip { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(33,150,243,.1); }
+    .filter-select { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; outline: none; }
+
+    /* GRID */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content:''; flex:1; height:1px; background: var(--border); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 32px; }
+
+    /* CARD */
+    .server-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: border-color .2s, transform .2s; position: relative; }
+    .server-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .card-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+    .card-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; border: 2px solid var(--border); overflow: hidden; }
+    .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-meta { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+    .stars { display: flex; gap: 2px; align-items: center; }
+    .star { color: var(--star); font-size: 0.85rem; }
+    .star-count { color: var(--muted); font-size: 0.75rem; margin-left: 4px; }
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tag { padding: 3px 10px; border-radius: 99px; background: rgba(33,150,243,.12); color: var(--accent); font-size: 0.72rem; font-weight: 600; letter-spacing: .3px; }
+    .card-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 16px; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .member-count { font-size: 0.8rem; color: var(--muted); }
+    .join-btn { background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .2s; text-decoration: none; }
+    .join-btn:hover { background: #1a7fd4; }
+    .vote-section { display: flex; align-items: center; gap: 8px; }
+    .vote-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: all .2s; }
+    .vote-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .vote-btn.voted { border-color: var(--accent); color: var(--accent); background: rgba(33,150,243,.1); }
+    .bump-badge { position: absolute; top: 12px; right: 12px; font-size: 0.68rem; color: var(--muted); }
+
+    .load-more-wrap { display:flex; justify-content:center; margin-bottom:60px; }
+    .load-more-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 10px 28px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif; }
+    .load-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .load-more-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .state-msg { text-align:center; padding: 50px 20px; color: var(--muted); grid-column: 1 / -1; }
+    .state-msg .icon { font-size: 2.2rem; margin-bottom: 10px; }
+
+    .skeleton-card { height: 230px; border-radius: var(--radius); background: linear-gradient(90deg,var(--surface) 25%,var(--card) 50%,var(--surface) 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* FOOTER */
+    footer { background: var(--surface); border-top: 1px solid var(--border); text-align: center; padding: 32px; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* MOBILE */
+    @media (max-width: 600px) {
+      nav { padding: 12px 16px; }
+      .nav-links a.nav-text { display: none; }
+      .btn { padding: 7px 13px; font-size: 0.82rem; }
+      .logout-btn { padding: 7px 10px; font-size: 0.8rem; }
+      .filters { padding: 0 16px 16px; }
+      .hero { padding: 48px 16px 28px; }
+      .hero-stats { gap: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#2196f3"/>
+      <path d="M7 16.5l3.5 3.5 9-9" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 10l-8 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    TeleBoard
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">🔍 Direktori Server Telegram Terlengkap</div>
+  <h1>Temukan <span>Komunitas Telegram</span><br/>yang Tepat Untukmu</h1>
+  <p>Jelajahi ribuan server Telegram. Tambah teman, bergabung komunitas, dan promosikan grupmu di sini.</p>
+  <div class="hero-search">
+    <input type="text" placeholder="Cari server berdasarkan nama atau tag..." id="searchInput" aria-label="Cari server Telegram"/>
+    <button onclick="doSearch()">Cari</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num" id="statServers">0</div><div class="stat-label">Server Terdaftar</div></div>
+    <div class="stat"><div class="stat-num" id="statMembers">0</div><div class="stat-label">Total Member</div></div>
+    <div class="stat"><div class="stat-num" id="statVotes">0</div><div class="stat-label">Vote Hari Ini</div></div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="filters">
+    <span style="color:var(--muted);font-size:.82rem;font-weight:600;">Filter:</span>
+    <div class="filter-chip active" data-tag="" onclick="filterTag(this,'')">Semua</div>
+    <div class="filter-chip" data-tag="gaming" onclick="filterTag(this,'gaming')">🎮 Gaming</div>
+    <div class="filter-chip" data-tag="anime" onclick="filterTag(this,'anime')">🎌 Anime</div>
+    <div class="filter-chip" data-tag="crypto" onclick="filterTag(this,'crypto')">💰 Crypto</div>
+    <div class="filter-chip" data-tag="music" onclick="filterTag(this,'music')">🎵 Musik</div>
+    <div class="filter-chip" data-tag="tech" onclick="filterTag(this,'tech')">💻 Teknologi</div>
+    <div class="filter-chip" data-tag="nft" onclick="filterTag(this,'nft')">🖼️ NFT</div>
+    <select class="filter-select" id="sortSelect" onchange="changeSort(this.value)">
+      <option value="last_bumped">Bumped Terbaru</option>
+      <option value="members">Terbanyak Member</option>
+      <option value="votes" selected>Terbanyak Vote</option>
+    </select>
+  </div>
+
+  <div class="section-title">Server Populer</div>
+  <div class="grid" id="serverGrid">
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card"></div>
+  </div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+    <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Muat Lebih Banyak</button>
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 TeleBoard &mdash; <a href="privacy.html">Kebijakan Privasi</a> · <a href="terms.html">Syarat Layanan</a>
+</footer>
+
+<script>
+const API = 'backend/api.php';
+
+let state = {
+  tag: '', sort: 'votes', q: '', page: 1, perPage: 12, total: 0, servers: []
+};
+
+let votedToday = JSON.parse(localStorage.getItem('votedServers') || '[]');
+
+/* ─── NAV ─── */
+function renderNav() {
+  const token = localStorage.getItem('token');
+  const el = document.getElementById('navLinks');
+  if (token) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const initial = (user.full_name || 'U')[0].toUpperCase();
+    const avatarHtml = user.avatar ? `<img src="${user.avatar}" alt="avatar"/>` : initial;
+    el.innerHTML = `
+      <a href="index.html" class="nav-text">Beranda</a>
+      <a href="index.html#serverGrid" class="nav-text">Server</a>
+      <a href="dashboard.html" class="nav-text">Dashboard</a>
+      <div class="nav-avatar" onclick="window.location.href='dashboard.html'" title="Dashboard">${avatarHtml}</div>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>`;
+  } else {
+    el.innerHTML = `
+      <a href="index.html" class="nav-text">Beranda</a>
+      <a href="news.html" class="nav-text nav-statistik">News</a>
+      <a href="index.html#serverGrid" class="nav-text">Server</a>
+      <a href="statistik.html" class="nav-text nav-statistik">Statistik</a>
+      <a href="login.html" class="btn btn-outline">Masuk</a>
+      <a href="register.html" class="btn btn-primary">Daftar</a>`;
+  }
+}
+
+function doLogout() {
+  if (!confirm('Yakin ingin keluar?')) return;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+/* ─── STATS ─── */
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}?action=get_stats`);
+    const d = await r.json();
+    if (d.success) {
+      animateCount('statServers', d.total_servers);
+      animateCount('statMembers', d.total_members);
+      animateCount('statVotes', d.votes_today);
+    }
+  } catch (err) { console.error('Gagal memuat statistik:', err); }
+}
+
+function animateCount(id, target) {
+  let n = 0;
+  const step = Math.max(1, Math.ceil(target / 60));
+  const el = document.getElementById(id);
+  const timer = setInterval(() => {
+    n = Math.min(n + step, target);
+    el.textContent = n.toLocaleString('id-ID');
+    if (n >= target) clearInterval(timer);
+  }, 16);
+}
+
+/* ─── HELPERS ─── */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function renderStars(rating) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= Math.floor(rating)) s += '<span class="star">★</span>';
+    else if (i - rating < 1 && i - rating > 0) s += '<span class="star" style="opacity:.5">★</span>';
+    else s += '<span class="star" style="opacity:.2">★</span>';
+  }
+  return s;
+}
+
+function formatMembers(n) {
+  return Number(n || 0).toLocaleString('id-ID');
+}
+
+/* ─── LOAD SERVERS ─── */
+async function fetchServers(reset = true) {
+  const grid = document.getElementById('serverGrid');
+  if (reset) {
+    state.page = 1; state.servers = [];
+    grid.innerHTML = `<div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>`;
+  }
+  const params = new URLSearchParams({ action: 'get_servers', sort: state.sort, page: state.page, per_page: state.perPage });
+  if (state.tag) params.set('tag', state.tag);
+  if (state.q) params.set('q', state.q);
+  try {
+    const r = await fetch(`${API}?${params.toString()}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Gagal memuat server.');
+    state.total = d.total;
+    state.servers = reset ? d.servers : state.servers.concat(d.servers);
+    renderCards(state.servers);
+    updateLoadMore();
+  } catch (err) {
+    console.error('Gagal memuat server:', err);
+    grid.innerHTML = `<div class="state-msg"><div class="icon">⚠️</div>Gagal memuat server. Coba muat ulang halaman.</div>`;
+    document.getElementById('loadMoreWrap').style.display = 'none';
+  }
+}
+
+function updateLoadMore() {
+  const wrap = document.getElementById('loadMoreWrap');
+  if (state.servers.length < state.total) {
+    wrap.style.display = 'flex';
+    document.getElementById('loadMoreBtn').disabled = false;
+    document.getElementById('loadMoreBtn').textContent = 'Muat Lebih Banyak';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function loadMore() {
+  state.page += 1;
+  document.getElementById('loadMoreBtn').disabled = true;
+  document.getElementById('loadMoreBtn').textContent = 'Memuat...';
+  fetchServers(false);
+}
+
+function renderCards(list) {
+  const grid = document.getElementById('serverGrid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="state-msg"><div class="icon">🔭</div>Tidak ada server yang cocok dengan pencarianmu.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(s => {
+    const tags = (s.tags || '').split(',').filter(Boolean);
+    const tagsHtml = tags.map(t => `<span class="tag">${escapeHtml(t.trim().toUpperCase())}</span>`).join('');
+    let avatarHtml;
+    if (s.avatar && (s.avatar.startsWith('http') || s.avatar.startsWith('/'))) {
+      avatarHtml = `<img src="${escapeHtml(s.avatar)}" alt="${escapeHtml(s.name)}"/>`;
+    } else {
+      avatarHtml = escapeHtml(s.avatar || '📡');
+    }
+    const rating = parseFloat(s.avg_rating) || 0;
+    const reviewCount = parseInt(s.review_count) || 0;
+    const voted = votedToday.includes(s.id);
+    return `
+      <div class="server-card" data-tags="${escapeHtml(s.tags || '')}">
+        <div class="bump-badge">🕐 ${escapeHtml(s.bumped || '')}</div>
+        <div class="card-top">
+          <div class="card-avatar">${avatarHtml}</div>
+          <div class="card-info">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div class="stars">${renderStars(rating)}<span class="star-count">(${reviewCount} ulasan)</span></div>
+            </div>
+            <div class="card-name">${escapeHtml(s.name)}</div>
+            <div class="card-meta"><span class="online-dot"></span>${formatMembers(s.members)} member</div>
+          </div>
+        </div>
+        ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+        <div class="card-desc">${escapeHtml(s.desc || 'Tidak ada deskripsi.')}</div>
+        <div class="card-footer">
+          <div class="vote-section">
+            <button class="vote-btn ${voted ? 'voted' : ''}" onclick="vote(${s.id}, this)">▲ ${voted ? 'Voted' : 'Vote'} (<span class="vc">${s.votes}</span>)</button>
+          </div>
+          <a href="server.html?id=${encodeURIComponent(s.id)}" class="join-btn">JOIN →</a>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ─── FILTER / SEARCH / SORT ─── */
+function filterTag(el, tag) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.tag = tag;
+  fetchServers(true);
+}
+
+function changeSort(value) {
+  state.sort = value;
+  fetchServers(true);
+}
+
+let searchDebounce;
+function doSearch() {
+  state.q = document.getElementById('searchInput').value.trim();
+  fetchServers(true);
+}
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(doSearch, 400);
+});
+
+/* ─── VOTE ─── */
+async function vote(id, btn) {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location.href = 'login.html'; return; }
+  if (votedToday.includes(id)) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${API}?action=vote_server`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ server_id: id })
+    });
+    const d = await res.json();
+    if (!d.success) { alert(d.message || 'Gagal vote.'); btn.disabled = false; return; }
+    btn.classList.add('voted');
+    btn.innerHTML = `▲ Voted (<span class="vc">${d.votes}</span>)`;
+    votedToday.push(id);
+    localStorage.setItem('votedServers', JSON.stringify(votedToday));
+  } catch (err) {
+    console.error('Gagal vote:', err);
+    alert('Gagal terhubung ke server.');
+    btn.disabled = false;
+  }
+}
+
+/* ─── TRACK VISIT ─── */
+async function trackVisit() {
+  try {
+    const r = await fetch('backend/api_visitor.php?action=track_visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        page: window.location.pathname.split('/').pop() || 'index.html',
+        referrer: document.referrer || 'direct',
+        ua: navigator.userAgent,
+        lang: navigator.language,
+        screen: `${screen.width}x${screen.height}`
+      })
+    });
+    const d = await r.json();
+    if (d.success && d.visit_id) {
+      const startTime = Date.now();
+      const sendDuration = () => {
+        const duration = Math.round((Date.now() - startTime) / 1000);
+        navigator.sendBeacon('backend/api_visitor.php?action=track_visit_duration', JSON.stringify({ visit_id: d.visit_id, duration }));
+      };
+      window.addEventListener('pagehide', sendDuration);
+      window.addEventListener('beforeunload', sendDuration);
+    }
+  } catch(e) { /* silent */ }
+}
+
+/* ─── INIT ─── */
+renderNav();
+loadStats();
+fetchServers(true);
+trackVisit();
+</script>
+</body>
+</html>
