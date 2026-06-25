@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kirim Artikel – TeleBoard</title>
+  <meta name="description" content="Kirim artikel atau tulisanmu ke TeleBoard. Artikel terbaik akan ditampilkan di halaman news kami."/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="icon" type="image/png" sizes="70x70" href="/telehub-70.png"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/telehub-57.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#2196f3"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <!-- Quill Rich Text Editor -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --card: #1c2333; --border: #30363d;
+      --accent: #2196f3; --accent2: #00bcd4; --text: #e6edf3; --muted: #8b949e;
+      --green: #3fb950; --danger: #f85149; --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    .nav-logo svg { width: 32px; height: 32px; }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; transition: all .2s; }
+    .nav-links a:hover { color: var(--text); background: var(--card); }
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #1a7fd4; }
+    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-outline:hover { background: var(--accent); color: #fff; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; }
+    .nav-statistik { background: linear-gradient(90deg, #2196f3, #00bcd4, #3fb950, #f0c040, #2196f3); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradientMove 3s linear infinite; font-weight: 600; }
+    @keyframes gradientMove { 0%{ background-position: 0% center; } 100%{ background-position: 200% center; } }
+
+    .page-header { max-width: 760px; margin: 0 auto; padding: 40px 24px 24px; }
+    .page-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+    .form-wrap { max-width: 760px; margin: 0 auto; padding: 0 24px 80px; }
+
+    .info-box { background: rgba(33,150,243,.08); border: 1px solid rgba(33,150,243,.25); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 28px; font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+    .info-box strong { color: var(--accent); }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .form-group label span { color: var(--danger); margin-left: 2px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text);
+      padding: 11px 14px; border-radius: 8px; font-size: 0.9rem; outline: none;
+      font-family: 'Inter', sans-serif; transition: border-color .2s;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group .hint { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:600px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* QUILL EDITOR */
+    .editor-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .ql-toolbar { background: var(--surface); border: none !important; border-bottom: 1px solid var(--border) !important; }
+    .ql-toolbar .ql-stroke { stroke: var(--muted); }
+    .ql-toolbar .ql-fill { fill: var(--muted); }
+    .ql-toolbar .ql-picker-label { color: var(--muted); }
+    .ql-toolbar button:hover .ql-stroke, .ql-toolbar .ql-active .ql-stroke { stroke: var(--accent) !important; }
+    .ql-toolbar button:hover .ql-fill, .ql-toolbar .ql-active .ql-fill { fill: var(--accent) !important; }
+    .ql-container { background: var(--card); border: none !important; font-family: 'Inter', sans-serif; font-size: 0.95rem; min-height: 320px; }
+    .ql-editor { color: var(--text); min-height: 320px; padding: 16px; }
+    .ql-editor.ql-blank::before { color: var(--muted); font-style: normal; }
+    .ql-editor p { color: #c9d1d9; margin-bottom: 8px; }
+    .ql-editor h2 { color: var(--text); }
+    .ql-editor h3 { color: var(--text); }
+    .ql-editor a { color: var(--accent); }
+    .ql-editor blockquote { border-left: 3px solid var(--accent); padding-left: 16px; color: var(--muted); }
+
+    .char-count { font-size: 0.75rem; color: var(--muted); margin-top: 6px; text-align: right; }
+    .char-count.warn { color: var(--danger); }
+
+    /* TAGS INPUT */
+    .tags-input-wrap { display: flex; flex-wrap: wrap; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; min-height: 44px; align-items: center; cursor: text; }
+    .tags-input-wrap:focus-within { border-color: var(--accent); }
+    .tag-chip { background: rgba(33,150,243,.15); color: var(--accent); padding: 3px 10px; border-radius: 99px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .tag-chip button { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
+    .tags-input-wrap input { background: none; border: none; outline: none; color: var(--text); font-size: 0.85rem; min-width: 120px; flex: 1; }
+
+    /* SUBMIT */
+    .submit-wrap { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+    .submit-btn { background: var(--accent); color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; }
+    .submit-btn:hover { background: #1a7fd4; }
+    .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .submit-note { font-size: 0.78rem; color: var(--muted); }
+
+    /* ALERT */
+    .alert { padding: 14px 18px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 20px; display: none; }
+    .alert-success { background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3); color: var(--green); }
+    .alert-error { background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.3); color: var(--danger); }
+
+    /* SUCCESS STATE */
+    .success-state { text-align: center; padding: 60px 20px; display: none; }
+    .success-state .icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .success-state h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 10px; }
+    .success-state p { color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+
+    footer { background: var(--surface); border-top: 1px solid var(--border); text-align: center; padding: 28px; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @media(max-width:600px) {
+      nav { padding: 12px 16px; }
+      .nav-links a:not(.btn) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#2196f3"/>
+      <path d="M7 16.5l3.5 3.5 9-9" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 10l-8 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    TeleBoard
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+</nav>
+
+<div class="page-header">
+  <h1>✍️ Kirim Artikel</h1>
+  <p>Punya tulisan menarik seputar Telegram, komunitas, atau tips teknologi? Kirimkan ke TeleBoard! Artikel terbaik akan kami tampilkan di halaman News.</p>
+</div>
+
+<div class="form-wrap">
+
+  <div class="info-box">
+    📋 <strong>Panduan singkat:</strong> Tulis artikel minimal 100 karakter · Gunakan judul yang jelas dan menarik · Hindari konten promosi berlebihan, spam, atau SARA · Artikel akan ditinjau admin dalam <strong>1-2 hari kerja</strong> sebelum ditayangkan.
+  </div>
+
+  <div class="alert alert-success" id="alertSuccess"></div>
+  <div class="alert alert-error" id="alertError"></div>
+
+  <div id="formContainer">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nama Penulis <span>*</span></label>
+        <input type="text" id="authorName" placeholder="Nama lengkap kamu" maxlength="100"/>
+      </div>
+      <div class="form-group">
+        <label>Email <span>*</span></label>
+        <input type="email" id="authorEmail" placeholder="email@kamu.com" maxlength="150"/>
+        <div class="hint">Email tidak akan ditampilkan secara publik.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Judul Artikel <span>*</span></label>
+      <input type="text" id="title" placeholder="Tulis judul yang menarik dan informatif..." maxlength="255" oninput="updateCharCount('title','titleCount',255)"/>
+      <div class="char-count" id="titleCount">0 / 255</div>
+    </div>
+
+    <div class="form-group">
+      <label>Ringkasan <span>*</span></label>
+      <textarea id="description" placeholder="Tulis ringkasan singkat artikel (tampil di card preview)..." maxlength="500" rows="3" oninput="updateCharCount('description','descCount',500)"></textarea>
+      <div class="char-count" id="descCount">0 / 500</div>
+    </div>
+
+    <div class="form-group">
+      <label>Konten Artikel <span>*</span></label>
+      <div class="editor-wrap">
+        <div id="quillEditor"></div>
+      </div>
+      <div class="char-count" id="contentCount">0 karakter (minimal 100)</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tags</label>
+        <div class="tags-input-wrap" id="tagsWrap" onclick="document.getElementById('tagInput').focus()">
+          <input type="text" id="tagInput" placeholder="Ketik tag lalu Enter..." maxlength="30"/>
+        </div>
+        <div class="hint">Contoh: telegram, gaming, tips — maks 5 tag</div>
+        <input type="hidden" id="tagsHidden"/>
+      </div>
+      <div class="form-group">
+        <label>URL Thumbnail</label>
+        <input type="url" id="thumbnail" placeholder="https://..." maxlength="500"/>
+        <div class="hint">Link gambar untuk preview artikel (opsional).</div>
+      </div>
+    </div>
+
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submitBtn" onclick="submitArticle()">
+        <span id="submitIcon">📤</span>
+        <span id="submitText">Kirim Artikel</span>
+      </button>
+      <span class="submit-note">Dengan mengirim, kamu menyetujui bahwa konten ini adalah karya original dan bebas plagiarisme.</span>
+    </div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="success-state" id="successState">
+    <div class="icon">🎉</div>
+    <h2>Artikel Berhasil Dikirim!</h2>
+    <p>Terima kasih! Artikel kamu sedang dalam antrian review admin.<br/>Kami akan meninjau dalam <strong>1-2 hari kerja</strong>.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="news.html" class="btn btn-primary">Lihat News</a>
+      <button class="btn btn-outline" onclick="resetForm()">Kirim Artikel Lagi</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  &copy; 2025 TeleBoard &mdash; <a href="privacy.html">Kebijakan Privasi</a> · <a href="terms.html">Syarat Layanan</a>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script>
+const API_NEWS = 'backend/api_news.php';
+
+/* ─── QUILL INIT ─── */
+const quill = new Quill('#quillEditor', {
+  theme: 'snow',
+  placeholder: 'Tulis isi artikel di sini...',
+  modules: {
+    toolbar: [
+      [{ header: [2, 3, false] }],
+      ['bold', 'italic', 'underline'],
+      ['blockquote', 'code-block'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link'],
+      ['clean']
+    ]
+  }
+});
+
+quill.on('text-change', () => {
+  const len = quill.getText().trim().length;
+  const el  = document.getElementById('contentCount');
+  el.textContent = `${len} karakter (minimal 100)`;
+  el.classList.toggle('warn', len < 100);
+});
+
+/* ─── CHAR COUNT ─── */
+function updateCharCount(inputId, countId, max) {
+  const len = document.getElementById(inputId).value.length;
+  const el  = document.getElementById(countId);
+  el.textContent = `${len} / ${max}`;
+  el.classList.toggle('warn', len > max * 0.9);
+}
+
+/* ─── TAGS ─── */
+let tags = [];
+document.getElementById('tagInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    addTag(e.target.value.trim());
+    e.target.value = '';
+  } else if (e.key === 'Backspace' && e.target.value === '' && tags.length) {
+    removeTag(tags.length - 1);
+  }
+});
+
+function addTag(val) {
+  val = val.replace(/,/g, '').trim().toLowerCase();
+  if (!val || tags.includes(val) || tags.length >= 5) return;
+  tags.push(val);
+  renderTags();
+}
+
+function removeTag(i) {
+  tags.splice(i, 1);
+  renderTags();
+}
+
+function renderTags() {
+  const wrap = document.getElementById('tagsWrap');
+  const input = document.getElementById('tagInput');
+  wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  tags.forEach((t, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${escHtml(t)}<button onclick="removeTag(${i})" type="button">×</button>`;
+    wrap.insertBefore(chip, input);
+  });
+  document.getElementById('tagsHidden').value = tags.join(',');
+}
+
+/* ─── SUBMIT ─── */
+async function submitArticle() {
+  const btn       = document.getElementById('submitBtn');
+  const alertErr  = document.getElementById('alertError');
+  const alertOk   = document.getElementById('alertSuccess');
+  alertErr.style.display = 'none';
+  alertOk.style.display  = 'none';
+
+  const authorName  = document.getElementById('authorName').value.trim();
+  const authorEmail = document.getElementById('authorEmail').value.trim();
+  const title       = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const content     = quill.root.innerHTML;
+  const contentText = quill.getText().trim();
+  const thumbnail   = document.getElementById('thumbnail').value.trim();
+  const tagsVal     = document.getElementById('tagsHidden').value;
+
+  // Validasi FE
+  if (!authorName)       return showError('Nama penulis wajib diisi.');
+  if (!authorEmail || !/\S+@\S+\.\S+/.test(authorEmail)) return showError('Email tidak valid.');
+  if (!title)            return showError('Judul artikel wajib diisi.');
+  if (!description)      return showError('Ringkasan wajib diisi.');
+  if (contentText.length < 100) return showError('Konten artikel minimal 100 karakter.');
+
+  btn.disabled = true;
+  document.getElementById('submitIcon').textContent = '⏳';
+  document.getElementById('submitText').textContent = 'Mengirim...';
+
+  try {
+    const r = await fetch(`${API_NEWS}?action=submit_article`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ author_name: authorName, author_email: authorEmail, title, description, content, tags: tagsVal, thumbnail })
+    });
+    const d = await r.json();
+    if (!d.success) {
+      showError(d.message || 'Gagal mengirim artikel.');
+      btn.disabled = false;
+      document.getElementById('submitIcon').textContent = '📤';
+      document.getElementById('submitText').textContent = 'Kirim Artikel';
+      return;
+    }
+    // Tampilkan success state
+    document.getElementById('formContainer').style.display = 'none';
+    document.getElementById('successState').style.display  = 'block';
+  } catch(e) {
+    showError('Gagal terhubung ke server. Coba lagi.');
+    btn.disabled = false;
+    document.getElementById('submitIcon').textContent = '📤';
+    document.getElementById('submitText').textContent = 'Kirim Artikel';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('alertError');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetForm() {
+  document.getElementById('formContainer').style.display = 'block';
+  document.getElementById('successState').style.display  = 'none';
+  document.getElementById('authorName').value  = '';
+  document.getElementById('authorEmail').value = '';
+  document.getElementById('title').value       = '';
+  document.getElementById('description').value = '';
+  document.getElementById('thumbnail').value   = '';
+  quill.setText('');
+  tags = [];
+  renderTags();
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitIcon').textContent = '📤';
+  document.getElementById('submitText').textContent = 'Kirim Artikel';
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+/* ─── NAV ─── */
+function renderNav() {
+  const token = localStorage.getItem('token');
+  const el = document.getElementById('navLinks');
+  if (token) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const initial = (user.full_name || 'U')[0].toUpperCase();
+    const avatarHtml = user.avatar ? `<img src="${user.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>` : initial;
+    el.innerHTML = `
+      <a href="index.html">Beranda</a>
+      <a href="news.html">News</a>
+      <a href="dashboard.html">Dashboard</a>
+      <div style="width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);background:var(--card);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer" onclick="window.location.href='dashboard.html'">${avatarHtml}</div>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>`;
+  } else {
+    el.innerHTML = `
+      <a href="index.html">Beranda</a>
+      <a href="news.html">News</a>
+      <a href="login.html" class="btn btn-outline">Masuk</a>
+      <a href="register.html" class="btn btn-primary">Daftar</a>`;
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+renderNav();
+</script>
+</body>
+</html>

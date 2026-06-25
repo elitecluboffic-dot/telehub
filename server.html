@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detail Server – TeleBoard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+    
+  <!-- ═══ FAVICON ═══ -->
+  <link rel="icon" type="image/png" sizes="70x70" href="/telehub-70.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/telehub-16.png"/>
+  <link rel="icon" type="image/png" sizes="72x72" href="/telehub-72.png"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/telehub-57.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#2196f3"/>    
+    
+<style>
+  :root {
+    --bg:#0d1117; --surface:#161b22; --card:#1c2333;
+    --border:#30363d; --accent:#2196f3; --accent2:#00bcd4;
+    --text:#e6edf3; --muted:#8b949e; --green:#3fb950;
+    --star:#f0c040; --danger:#f85149; --warn:#f0a040; --radius:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  a{color:inherit;}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .nav-logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;color:var(--accent);text-decoration:none;flex-shrink:0;}
+  .nav-logo svg{width:32px;height:32px;}
+  .nav-links{display:flex;gap:8px;align-items:center;}
+  .nav-links a.nav-text{color:var(--muted);text-decoration:none;font-size:0.9rem;padding:6px 14px;border-radius:8px;transition:all .2s;white-space:nowrap;}
+  .nav-links a.nav-text:hover{color:var(--text);background:var(--card);}
+  .btn{padding:8px 16px;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;white-space:nowrap;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#1a7fd4;}
+  .btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+  .btn-outline:hover{background:var(--accent);color:#fff;}
+  .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 12px;border-radius:8px;font-size:0.82rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+  .nav-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:0.9rem;overflow:hidden;cursor:pointer;flex-shrink:0;}
+  .nav-avatar img{width:100%;height:100%;object-fit:cover;}
+
+  .container{max-width:1180px;margin:0 auto;padding:24px 24px 60px;}
+  .breadcrumb{font-size:0.84rem;color:var(--muted);margin-bottom:18px;}
+  .breadcrumb a{color:var(--muted);text-decoration:none;}
+  .breadcrumb a:hover{color:var(--accent);}
+
+  .skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--card) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .skeleton-header{height:300px;margin-bottom:22px;border-radius:var(--radius);}
+  .skeleton-card{height:180px;margin-bottom:20px;border-radius:var(--radius);}
+
+  .header-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:22px;}
+  .banner{height:140px;background:linear-gradient(135deg,#1a3a5c,#142a45,#0a1628);position:relative;}
+  .banner-tag{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.45);color:var(--muted);font-size:0.72rem;padding:5px 12px;border-radius:99px;display:flex;align-items:center;gap:6px;}
+  .header-body{padding:0 28px 26px;position:relative;}
+  .header-top{display:flex;gap:18px;align-items:flex-end;margin-top:-44px;margin-bottom:16px;flex-wrap:wrap;}
+  .server-avatar{width:92px;height:92px;border-radius:22px;background:var(--surface);border:4px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:2.6rem;flex-shrink:0;overflow:hidden;}
+  .server-avatar img{width:100%;height:100%;object-fit:cover;}
+  .header-info{flex:1;min-width:200px;padding-bottom:4px;}
+  .server-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .server-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.6rem;}
+  .verified-badge{color:var(--accent);font-size:1.1rem;}
+  .server-meta-row{display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap;font-size:0.85rem;color:var(--muted);}
+  .online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;}
+  .stars{display:inline-flex;gap:1px;vertical-align:middle;}
+  .star{color:var(--star);font-size:0.85rem;}
+  .header-actions{display:flex;gap:10px;flex-shrink:0;padding-bottom:4px;flex-wrap:wrap;}
+  .join-btn-lg{background:var(--accent);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:background .2s;white-space:nowrap;}
+  .join-btn-lg:hover{background:#1a7fd4;}
+  .vote-btn-lg{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:10px;font-size:0.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;white-space:nowrap;}
+  .vote-btn-lg:hover{border-color:var(--accent);color:var(--accent);}
+  .vote-btn-lg.voted{border-color:var(--accent);color:var(--accent);background:rgba(33,150,243,.1);}
+  .icon-btn{width:42px;height:42px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .tag-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+  .tag{padding:4px 12px;border-radius:99px;background:rgba(33,150,243,.12);color:var(--accent);font-size:0.74rem;font-weight:600;letter-spacing:.3px;}
+
+  .quickstats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:10px;overflow:hidden;}
+  .qstat{background:var(--surface);padding:14px 16px;text-align:center;}
+  .qstat-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.2rem;color:var(--accent);}
+  .qstat-label{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:22px;margin-top:22px;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+
+  .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);}
+  .section-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.98rem;display:flex;align-items:center;gap:8px;}
+  .section-body{padding:20px 22px;}
+  .desc-text{font-size:0.92rem;line-height:1.75;color:var(--text);white-space:pre-line;}
+
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .gallery-item{aspect-ratio:16/10;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--muted);overflow:hidden;cursor:pointer;}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;}
+
+  .rating-summary{display:flex;align-items:center;gap:18px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .rs-big{text-align:center;}
+  .rs-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2.2rem;color:var(--star);line-height:1;}
+  .rs-stars{margin-top:4px;}
+  .rs-count{font-size:0.75rem;color:var(--muted);margin-top:4px;}
+  .rs-bars{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .rs-bar-row{display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--muted);}
+  .rs-bar-track{flex:1;height:6px;background:var(--surface);border-radius:99px;overflow:hidden;}
+  .rs-bar-fill{height:100%;background:var(--star);border-radius:99px;}
+
+  .review-item{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--border);}
+  .review-item:last-child{border-bottom:none;}
+  .rev-avatar{width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+  .rev-body{flex:1;min-width:0;}
+  .rev-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .rev-name{font-size:0.88rem;font-weight:600;}
+  .rev-date{font-size:0.72rem;color:var(--muted);margin-left:auto;}
+  .rev-text{font-size:0.85rem;color:var(--text);line-height:1.6;margin-top:6px;}
+  .write-review-btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:0.84rem;font-weight:600;cursor:pointer;}
+  .write-review-btn:hover{background:#1a7fd4;}
+  .empty-state{text-align:center;padding:24px;color:var(--muted);font-size:0.85rem;}
+  .empty-icon{font-size:2rem;margin-bottom:8px;}
+  .load-more{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:8px;font-size:0.83rem;cursor:pointer;margin-top:14px;font-family:'Inter',sans-serif;transition:all .2s;}
+  .load-more:hover{border-color:var(--accent);color:var(--accent);}
+
+  .widget{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px;}
+  .widget-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.84rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
+  .owner-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .owner-avatar{width:46px;height:46px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden;}
+  .owner-avatar img{width:100%;height:100%;object-fit:cover;}
+  .owner-name{font-size:0.9rem;font-weight:600;}
+  .owner-role{font-size:0.74rem;color:var(--accent);}
+  .info-row{display:flex;justify-content:space-between;font-size:0.84rem;color:var(--muted);padding:8px 0;border-bottom:1px solid var(--border);}
+  .info-row:last-child{border-bottom:none;}
+  .info-row span:last-child{color:var(--text);font-weight:500;}
+  .report-link{display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--muted);cursor:pointer;margin-top:6px;}
+  .report-link:hover{color:var(--danger);}
+
+  .related-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+  .related-item:last-child{border-bottom:none;}
+  .related-item:hover .related-name{color:var(--accent);}
+  .related-avatar{width:38px;height:38px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden;}
+  .related-avatar img{width:100%;height:100%;object-fit:cover;}
+  .related-info{flex:1;min-width:0;}
+  .related-name{font-size:0.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s;}
+  .related-meta{font-size:0.72rem;color:var(--muted);}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;padding:16px;}
+  .modal-bg.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px;width:100%;max-width:440px;transform:scale(.95);transition:transform .25s;max-height:90vh;overflow-y:auto;}
+  .modal-bg.open .modal{transform:scale(1);}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .modal-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.05rem;}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+  .modal-close:hover{color:var(--text);}
+  .star-picker{display:flex;gap:6px;justify-content:center;margin:6px 0 18px;}
+  .star-pick{font-size:1.8rem;color:var(--border);cursor:pointer;transition:color .15s;}
+  .star-pick.active{color:var(--star);}
+  .form-group{margin-bottom:16px;}
+  label{display:block;font-size:0.82rem;color:var(--muted);margin-bottom:6px;font-weight:500;}
+  textarea,select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;padding:10px 14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s;resize:vertical;}
+  textarea:focus,select:focus{border-color:var(--accent);}
+  textarea{min-height:90px;}
+  .btn-save{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.92rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;}
+  .btn-save:hover{background:#1a7fd4;}
+  .btn-save.danger{background:var(--danger);}
+  .btn-save.danger:hover{background:#d33;}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:0.86rem;display:flex;align-items:center;gap:10px;z-index:400;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.ok{border-color:var(--green);}
+  .toast.err{border-color:var(--danger);}
+
+  .not-found{text-align:center;padding:80px 24px;}
+  .not-found-icon{font-size:3.4rem;margin-bottom:16px;}
+
+  footer{background:var(--surface);border-top:1px solid var(--border);text-align:center;padding:32px;color:var(--muted);font-size:0.85rem;}
+  footer a{color:var(--accent);text-decoration:none;}
+
+  /* MOBILE */
+  @media(max-width:600px){
+    nav{padding:12px 16px;}
+    .nav-links a.nav-text{display:none;}
+    .btn{padding:7px 13px;font-size:0.82rem;}
+    .logout-btn{padding:7px 10px;font-size:0.8rem;}
+    .container{padding:16px 16px 40px;}
+    .header-body{padding:0 16px 20px;}
+    .quickstats{grid-template-columns:repeat(2,1fr);}
+    .header-actions{width:100%;}
+    .join-btn-lg{flex:1;justify-content:center;}
+    .gallery{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#2196f3"/>
+      <path d="M7 16.5l3.5 3.5 9-9" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 10l-8 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    TeleBoard
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+</nav>
+
+<div class="container" id="pageRoot">
+  <div class="skeleton skeleton-header"></div>
+  <div class="skeleton skeleton-card"></div>
+  <div class="skeleton skeleton-card"></div>
+</div>
+
+<footer>
+  &copy; 2025 TeleBoard &mdash; <a href="#">Kebijakan Privasi</a> · <a href="#">Syarat Layanan</a> · <a href="#">Kontak</a>
+</footer>
+
+<!-- MODAL: TULIS ULASAN -->
+<div class="modal-bg" id="modalReview">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">✍️ Tulis Ulasan</div>
+      <button class="modal-close" onclick="closeModal('modalReview')">✕</button>
+    </div>
+    <label style="text-align:center;display:block;">Berapa bintang untuk server ini?</label>
+    <div class="star-picker" id="starPicker">
+      <span class="star-pick" data-v="1" onclick="pickStar(1)">★</span>
+      <span class="star-pick" data-v="2" onclick="pickStar(2)">★</span>
+      <span class="star-pick" data-v="3" onclick="pickStar(3)">★</span>
+      <span class="star-pick" data-v="4" onclick="pickStar(4)">★</span>
+      <span class="star-pick" data-v="5" onclick="pickStar(5)">★</span>
+    </div>
+    <div class="form-group">
+      <label>Ulasanmu</label>
+      <textarea id="reviewText" placeholder="Bagaimana pengalamanmu di server ini?" maxlength="400"></textarea>
+    </div>
+    <button class="btn-save" onclick="submitReview()">Kirim Ulasan</button>
+  </div>
+</div>
+
+<!-- MODAL: LAPORKAN SERVER -->
+<div class="modal-bg" id="modalReport">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">🚩 Laporkan Server</div>
+      <button class="modal-close" onclick="closeModal('modalReport')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Alasan</label>
+      <select id="reportReason">
+        <option value="spam">Spam atau konten menyesatkan</option>
+        <option value="scam">Penipuan / scam</option>
+        <option value="nsfw">Konten dewasa tidak pantas</option>
+        <option value="ilegal">Aktivitas ilegal</option>
+        <option value="lain">Lainnya</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Detail tambahan (opsional)</label>
+      <textarea id="reportDetail" placeholder="Jelaskan lebih lanjut..." maxlength="300"></textarea>
+    </div>
+    <button class="btn-save danger" onclick="submitReport()">Kirim Laporan</button>
+  </div>
+</div>
+
+<!-- MODAL: BAGIKAN -->
+<div class="modal-bg" id="modalShare">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-head">
+      <div class="modal-title">🔗 Bagikan Server</div>
+      <button class="modal-close" onclick="closeModal('modalShare')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Link halaman</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="shareUrl" readonly style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85rem;padding:10px 12px;outline:none;min-width:0;"/>
+        <button class="btn btn-primary" onclick="copyShareUrl()">Salin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'backend/api.php';
+
+let server = null;
+let currentUser = null;
+let isLoggedIn = false;
+let hasVoted = false;
+let visibleReviews = 3;
+let pickedStar = 0;
+
+/* ─── INIT ─── */
+window.onload = () => {
+  renderNav();
+  loadServer();
+};
+
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function renderNav() {
+  const token = localStorage.getItem('token');
+  isLoggedIn = !!token;
+  const el = document.getElementById('navLinks');
+  if (isLoggedIn) {
+    currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const initial = (currentUser.full_name || 'U')[0].toUpperCase();
+    const avatarHtml = currentUser.avatar
+      ? `<img src="${currentUser.avatar}" alt="avatar"/>`
+      : initial;
+    el.innerHTML = `
+      <a href="index.html" class="nav-text">Beranda</a>
+      <a href="dashboard.html" class="nav-text">Dashboard</a>
+      <div class="nav-avatar" onclick="window.location.href='dashboard.html'" title="Dashboard">${avatarHtml}</div>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>`;
+  } else {
+    el.innerHTML = `
+      <a href="index.html" class="nav-text">Beranda</a>
+      <a href="index.html" class="nav-text">Server</a>
+      <a href="login.html" class="btn btn-outline">Masuk</a>
+      <a href="register.html" class="btn btn-primary">Daftar</a>`;
+  }
+}
+
+function doLogout() {
+  if (!confirm('Yakin ingin keluar?')) return;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+/* ─── LOAD SERVER ─── */
+async function loadServer() {
+  const id = parseInt(getParam('id'));
+  if (!id) { renderNotFound(); return; }
+
+  try {
+    const r = await fetch(`${API}?action=get_server&id=${id}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (d.success && d.server) {
+      server = d.server;
+    } else {
+      renderNotFound();
+      return;
+    }
+  } catch (err) {
+    console.error('Gagal memuat server:', err);
+    renderError();
+    return;
+  }
+
+  hasVoted = (JSON.parse(localStorage.getItem('votedServers') || '[]')).includes(server.id);
+  renderPage();
+}
+
+function renderNotFound() {
+  document.getElementById('pageRoot').innerHTML = `
+    <div class="not-found">
+      <div class="not-found-icon">🔭</div>
+      <h2 style="font-family:'Space Grotesk',sans-serif;margin-bottom:8px;">Server Tidak Ditemukan</h2>
+      <p style="color:var(--muted);margin-bottom:20px;">Server yang kamu cari mungkin sudah dihapus atau tidak pernah ada.</p>
+      <a href="index.html" class="btn btn-primary">← Kembali ke Beranda</a>
+    </div>`;
+}
+
+function renderError() {
+  document.getElementById('pageRoot').innerHTML = `
+    <div class="not-found">
+      <div class="not-found-icon">⚠️</div>
+      <h2 style="font-family:'Space Grotesk',sans-serif;margin-bottom:8px;">Gagal Memuat</h2>
+      <p style="color:var(--muted);margin-bottom:20px;">Tidak dapat terhubung ke server. Coba beberapa saat lagi.</p>
+      <a href="index.html" class="btn btn-primary">← Kembali ke Beranda</a>
+    </div>`;
+}
+
+/* ─── RENDER PAGE ─── */
+function renderStars(rating) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= Math.floor(rating)) s += '<span class="star">★</span>';
+    else if (i - rating < 1 && i - rating > 0) s += '<span class="star" style="opacity:.5">★</span>';
+    else s += '<span class="star" style="opacity:.2">★</span>';
+  }
+  return s;
+}
+
+function ratingBarPct(reviews, star) {
+  if (!reviews || !reviews.length) return 0;
+  const count = reviews.filter(r => Math.round(r.rating) === star).length;
+  return Math.round((count / reviews.length) * 100);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function formatMembers(n) {
+  if (n === null || n === undefined) return '—';
+  return Number(n).toLocaleString('id-ID');
+}
+
+function renderPage() {
+  const s = server;
+  document.title = `${s.name} – TeleBoard`;
+
+  const tags = (s.tag || '').split(',').filter(Boolean);
+  const tagsHtml = tags.map(t => `<span class="tag">${escapeHtml(t.trim().toUpperCase())}</span>`).join('');
+
+  let avatarHtml;
+  if (s.avatar && (s.avatar.startsWith('http') || s.avatar.startsWith('/'))) {
+    avatarHtml = `<img src="${escapeHtml(s.avatar)}" alt="${escapeHtml(s.name)}"/>`;
+  } else {
+    avatarHtml = escapeHtml(s.avatar || '📢');
+  }
+
+  const rating = parseFloat(s.rating) || 0;
+  const reviewCount = parseInt(s.review_count || s.reviewCount) || 0;
+  const reviews = s.reviews || [];
+  const votes = parseInt(s.votes) || 0;
+  const members = parseInt(s.members) || 0;
+  const online = parseInt(s.online) || 0;
+
+  document.getElementById('pageRoot').innerHTML = `
+    <div class="breadcrumb"><a href="index.html">Beranda</a> / <a href="index.html">Server</a> / ${escapeHtml(s.name)}</div>
+
+    <div class="header-card">
+      <div class="banner">
+        ${s.bumped ? `<div class="banner-tag">🕐 Bumped ${escapeHtml(s.bumped)}</div>` : ''}
+      </div>
+      <div class="header-body">
+        <div class="header-top">
+          <div class="server-avatar">${avatarHtml}</div>
+          <div class="header-info">
+            <div class="server-name-row">
+              <div class="server-name">${escapeHtml(s.name)}</div>
+              ${s.verified ? '<span class="verified-badge" title="Server terverifikasi">✔️</span>' : ''}
+            </div>
+            <div class="server-meta-row">
+              <span><span class="online-dot"></span>${formatMembers(online)} online · ${formatMembers(members)} member</span>
+              <span class="stars">${renderStars(rating)}</span>
+              <span>${rating.toFixed(1)} (${reviewCount} ulasan)</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="vote-btn-lg ${hasVoted ? 'voted' : ''}" id="voteBtn" onclick="vote()">
+              ▲ ${hasVoted ? 'Sudah Vote' : 'Vote'} (<span id="voteCount">${votes}</span>)
+            </button>
+            <a href="${escapeHtml(s.telegram || '#')}" target="_blank" rel="noopener" class="join-btn-lg">📩 Gabung</a>
+            <button class="icon-btn" title="Bagikan" onclick="openShare()">🔗</button>
+          </div>
+        </div>
+        ${tagsHtml ? `<div class="tag-row">${tagsHtml}</div>` : ''}
+        <div class="quickstats">
+          <div class="qstat"><div class="qstat-num">${formatMembers(members)}</div><div class="qstat-label">Total Member</div></div>
+          <div class="qstat"><div class="qstat-num">${formatMembers(online)}</div><div class="qstat-label">Online</div></div>
+          <div class="qstat"><div class="qstat-num">${votes.toLocaleString('id-ID')}</div><div class="qstat-label">Total Vote</div></div>
+          <div class="qstat"><div class="qstat-num">${rating.toFixed(1)}</div><div class="qstat-label">Rating</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="main-col">
+        <div class="section-card">
+          <div class="section-head"><div class="section-title">📄 Tentang Server</div></div>
+          <div class="section-body"><div class="desc-text">${escapeHtml(s.desc || s.description || 'Tidak ada deskripsi.')}</div></div>
+        </div>
+
+        ${renderGalleryCard(s)}
+
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">⭐ Ulasan Pengguna</div>
+            <button class="write-review-btn" onclick="openReviewModal()">✍️ Tulis Ulasan</button>
+          </div>
+          <div class="section-body">
+            <div class="rating-summary">
+              <div class="rs-big">
+                <div class="rs-num">${rating.toFixed(1)}</div>
+                <div class="rs-stars">${renderStars(rating)}</div>
+                <div class="rs-count">${reviewCount} ulasan</div>
+              </div>
+              <div class="rs-bars">
+                ${[5,4,3,2,1].map(n => `
+                  <div class="rs-bar-row">
+                    <span>${n}★</span>
+                    <div class="rs-bar-track"><div class="rs-bar-fill" style="width:${ratingBarPct(reviews, n)}%"></div></div>
+                    <span>${ratingBarPct(reviews, n)}%</span>
+                  </div>`).join('')}
+              </div>
+            </div>
+            <div id="reviewsList"></div>
+            <button class="load-more" id="loadMoreBtn" onclick="loadMoreReviews()" style="display:none;">Muat lebih banyak ulasan</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        ${renderOwnerWidget(s)}
+
+        <div class="widget">
+          <div class="widget-title">Informasi Server</div>
+          <div class="info-row"><span>Terdaftar sejak</span><span>${escapeHtml(s.createdAt || s.created_at || '—')}</span></div>
+          ${s.bumped ? `<div class="info-row"><span>Terakhir di-bump</span><span>${escapeHtml(s.bumped)}</span></div>` : ''}
+          <div class="info-row"><span>Status</span><span style="color:var(--green);">Aktif</span></div>
+          <div class="info-row"><span>Verifikasi</span><span>${s.verified ? '✔️ Terverifikasi' : 'Belum'}</span></div>
+          <div class="report-link" onclick="openModal('modalReport')">🚩 Laporkan server ini</div>
+        </div>
+
+        <div class="widget" id="relatedWidget">
+          <div class="widget-title">Server Serupa</div>
+          <div id="relatedList"><div style="font-size:0.82rem;color:var(--muted);">Memuat...</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderReviews();
+  loadRelated();
+}
+
+function renderGalleryCard(s) {
+  const imgs = s.gallery || s.images || [];
+  if (!imgs.length) return '';
+  const items = imgs.slice(0, 6).map(url =>
+    `<div class="gallery-item"><img src="${escapeHtml(url)}" alt="galeri" loading="lazy" onerror="this.parentElement.innerHTML='🖼️'"/></div>`
+  ).join('');
+  return `
+    <div class="section-card">
+      <div class="section-head"><div class="section-title">🖼️ Galeri</div></div>
+      <div class="section-body"><div class="gallery">${items}</div></div>
+    </div>`;
+}
+
+function renderOwnerWidget(s) {
+  if (!s.owner) return '';
+  const o = s.owner;
+  let ownerAvatar;
+  if (o.avatar && (o.avatar.startsWith('http') || o.avatar.startsWith('/'))) {
+    ownerAvatar = `<img src="${escapeHtml(o.avatar)}" alt="${escapeHtml(o.name || '')}"/>`;
+  } else {
+    ownerAvatar = escapeHtml((o.name || 'O')[0].toUpperCase());
+  }
+  const tgLink = o.username ? `https://t.me/${o.username}` : '#';
+  return `
+    <div class="widget">
+      <div class="widget-title">Pemilik Server</div>
+      <div class="owner-row">
+        <div class="owner-avatar">${ownerAvatar}</div>
+        <div>
+          <div class="owner-name">${escapeHtml(o.name || '—')}</div>
+          ${o.username ? `<div class="owner-role">@${escapeHtml(o.username)}</div>` : ''}
+        </div>
+      </div>
+      ${o.username ? `<a href="${tgLink}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;justify-content:center;">💬 Hubungi Pemilik</a>` : ''}
+    </div>`;
+}
+
+/* ─── REVIEWS ─── */
+function renderReviews() {
+  const list = document.getElementById('reviewsList');
+  const reviews = server.reviews || [];
+  if (!reviews.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div>Belum ada ulasan. Jadilah yang pertama!</div>`;
+    document.getElementById('loadMoreBtn').style.display = 'none';
+    return;
+  }
+  const shown = reviews.slice(0, visibleReviews);
+  list.innerHTML = shown.map(r => {
+    const name = r.name || r.username || 'Pengguna';
+    return `
+      <div class="review-item">
+        <div class="rev-avatar">${escapeHtml(name[0].toUpperCase())}</div>
+        <div class="rev-body">
+          <div class="rev-top">
+            <span class="rev-name">${escapeHtml(name)}</span>
+            <span class="stars">${renderStars(parseFloat(r.rating) || 0)}</span>
+            <span class="rev-date">${escapeHtml(r.date || r.created_at || '')}</span>
+          </div>
+          <div class="rev-text">${escapeHtml(r.text || r.comment || '')}</div>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('loadMoreBtn').style.display =
+    reviews.length > visibleReviews ? 'block' : 'none';
+}
+
+function loadMoreReviews() {
+  visibleReviews += 5;
+  renderReviews();
+}
+
+function openReviewModal() {
+  if (!isLoggedIn) { window.location.href = 'login.html'; return; }
+  pickedStar = 0;
+  document.querySelectorAll('.star-pick').forEach(el => el.classList.remove('active'));
+  document.getElementById('reviewText').value = '';
+  openModal('modalReview');
+}
+
+function pickStar(v) {
+  pickedStar = v;
+  document.querySelectorAll('.star-pick').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.v) <= v);
+  });
+}
+
+async function submitReview() {
+  const text = document.getElementById('reviewText').value.trim();
+  if (pickedStar === 0) { toast('Pilih rating bintang terlebih dahulu.', 'err'); return; }
+  if (text.length < 5) { toast('Tulis ulasan minimal 5 karakter.', 'err'); return; }
+
+  try {
+    const res = await fetch(`${API}?action=submit_review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') || '' },
+      body: JSON.stringify({ server_id: server.id, rating: pickedStar, text })
+    });
+    const d = await res.json();
+    if (!d.success) { toast(d.message || 'Gagal mengirim ulasan.', 'err'); return; }
+  } catch {
+    toast('Gagal terhubung ke server.', 'err'); return;
+  }
+
+  const name = currentUser?.full_name || 'Pengguna';
+  server.reviews.unshift({ name, rating: pickedStar, date: 'Baru saja', text });
+  server.review_count = (server.reviews || []).length;
+  const total = server.reviews.reduce((sum, r) => sum + parseFloat(r.rating || 0), 0);
+  server.rating = total / server.reviews.length;
+  visibleReviews = Math.max(visibleReviews, 3);
+
+  renderPage();
+  closeModal('modalReview');
+  toast('✅ Ulasan berhasil dikirim!', 'ok');
+}
+
+/* ─── VOTE ─── */
+async function vote() {
+  if (!isLoggedIn) { window.location.href = 'login.html'; return; }
+  if (hasVoted) { toast('Kamu sudah vote server ini hari ini.', 'err'); return; }
+
+  try {
+    const res = await fetch(`${API}?action=vote_server`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') || '' },
+      body: JSON.stringify({ server_id: server.id })
+    });
+    const d = await res.json();
+    if (!d.success) { toast(d.message || 'Gagal vote.', 'err'); return; }
+  } catch {
+    toast('Gagal terhubung ke server.', 'err'); return;
+  }
+
+  server.votes = (parseInt(server.votes) || 0) + 1;
+  hasVoted = true;
+  document.getElementById('voteCount').textContent = server.votes;
+  document.getElementById('voteBtn').className = 'vote-btn-lg voted';
+  document.getElementById('voteBtn').innerHTML = `▲ Sudah Vote (<span id="voteCount">${server.votes}</span>)`;
+
+  const voted = JSON.parse(localStorage.getItem('votedServers') || '[]');
+  voted.push(server.id);
+  localStorage.setItem('votedServers', JSON.stringify(voted));
+  toast('🎉 Terima kasih sudah vote!', 'ok');
+}
+
+/* ─── REPORT ─── */
+async function submitReport() {
+  if (!isLoggedIn) { window.location.href = 'login.html'; return; }
+  const reason = document.getElementById('reportReason').value;
+  const detail = document.getElementById('reportDetail').value.trim();
+
+  try {
+    await fetch(`${API}?action=report_server`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') || '' },
+      body: JSON.stringify({ server_id: server.id, reason, detail })
+    });
+  } catch {}
+
+  document.getElementById('reportDetail').value = '';
+  closeModal('modalReport');
+  toast('🚩 Laporan terkirim. Terima kasih!', 'ok');
+}
+
+/* ─── SHARE ─── */
+function openShare() {
+  document.getElementById('shareUrl').value = window.location.href;
+  openModal('modalShare');
+}
+function copyShareUrl() {
+  const input = document.getElementById('shareUrl');
+  input.select();
+  navigator.clipboard?.writeText(input.value)
+    .then(() => toast('🔗 Link disalin ke clipboard!', 'ok'))
+    .catch(() => { document.execCommand('copy'); toast('🔗 Link disalin!', 'ok'); });
+}
+
+/* ─── RELATED SERVERS ─── */
+async function loadRelated() {
+  const el = document.getElementById('relatedList');
+  if (!el) return;
+
+  try {
+    const tags = (server.tag || '').split(',').filter(Boolean).join(',');
+    const res = await fetch(`${API}?action=related_servers&id=${server.id}&tags=${encodeURIComponent(tags)}&limit=4`);
+    const d = await res.json();
+    if (!d.success || !d.servers || !d.servers.length) {
+      el.innerHTML = `<div style="font-size:0.82rem;color:var(--muted);">Tidak ada server serupa.</div>`;
+      return;
+    }
+    el.innerHTML = d.servers.map(s => {
+      let avt;
+      if (s.avatar && (s.avatar.startsWith('http') || s.avatar.startsWith('/'))) {
+        avt = `<img src="${escapeHtml(s.avatar)}" alt="${escapeHtml(s.name)}" loading="lazy" onerror="this.parentElement.innerHTML='📢'"/>`;
+      } else {
+        avt = escapeHtml(s.avatar || '📢');
+      }
+      return `
+        <div class="related-item" onclick="window.location.href='server.html?id=${encodeURIComponent(s.id)}'">
+          <div class="related-avatar">${avt}</div>
+          <div class="related-info">
+            <div class="related-name">${escapeHtml(s.name)}</div>
+            <div class="related-meta">👥 ${formatMembers(s.members)} · ▲ ${parseInt(s.votes || 0).toLocaleString('id-ID')}</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = `<div style="font-size:0.82rem;color:var(--muted);">Tidak dapat memuat.</div>`;
+  }
+}
+
+/* ─── MODAL / TOAST ─── */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList && e.target.classList.contains('modal-bg'))
+    e.target.classList.remove('open');
+});
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
