@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – TeleBoard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+    
+    <!-- ═══ FAVICON ═══ -->
+  <link rel="icon" type="image/png" sizes="70x70" href="/telehub-70.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/telehub-16.png"/>
+  <link rel="icon" type="image/png" sizes="72x72" href="/telehub-72.png"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/telehub-57.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#2196f3"/>  
+    
+  <style>
+    :root {
+      --bg:#0d1117;--surface:#161b22;--card:#1c2333;
+      --border:#30363d;--accent:#2196f3;--accent2:#00bcd4;
+      --text:#e6edf3;--muted:#8b949e;--green:#3fb950;
+      --danger:#f85149;--warn:#f0a040;--radius:12px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+
+    /* NAV */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+    .nav-logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;color:var(--accent);text-decoration:none;}
+    .nav-logo svg{width:28px;height:28px;}
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .notif-btn{position:relative;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:6px;}
+    .notif-btn:hover{color:var(--text);}
+    .notif-badge{position:absolute;top:2px;right:2px;width:16px;height:16px;background:var(--danger);border-radius:50%;font-size:0.6rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);}
+    .avatar-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);cursor:pointer;overflow:hidden;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+    .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:0.82rem;cursor:pointer;transition:all .2s;}
+    .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+    /* LAYOUT */
+    .layout{display:grid;grid-template-columns:280px 1fr 300px;gap:20px;max-width:1300px;margin:0 auto;padding:24px 20px;}
+    @media(max-width:1100px){.layout{grid-template-columns:260px 1fr;}.right-col{display:none;}}
+    @media(max-width:720px){.layout{grid-template-columns:1fr;gap:16px;padding:16px;}.left-col{order:2;}.main-col{order:1;}}
+
+    /* SIDEBAR LEFT */
+    .left-col{display:flex;flex-direction:column;gap:16px;}
+
+    /* PROFILE CARD */
+    .profile-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .profile-banner{height:80px;background:linear-gradient(135deg,#1a3a5c,#0d2137,#0a1628);position:relative;}
+    .profile-banner-edit{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:0.72rem;cursor:pointer;}
+    .profile-body{padding:0 16px 16px;}
+    .profile-avatar-wrap{position:relative;margin-top:-28px;margin-bottom:10px;width:fit-content;}
+    .profile-avatar{width:60px;height:60px;border-radius:50%;border:3px solid var(--card);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden;cursor:pointer;}
+    .profile-avatar img{width:100%;height:100%;object-fit:cover;}
+    .avatar-edit{position:absolute;bottom:0;right:0;width:20px;height:20px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.6rem;cursor:pointer;border:2px solid var(--card);}
+    .online-status{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--green);margin-bottom:2px;}
+    .online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+    .profile-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:2px;}
+    .profile-username{font-size:0.82rem;color:var(--muted);}
+    .profile-bio{font-size:0.82rem;color:var(--muted);margin:10px 0;line-height:1.5;border-top:1px solid var(--border);padding-top:10px;}
+    .profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;border-top:1px solid var(--border);margin-top:10px;padding-top:12px;}
+    .pstat{text-align:center;}
+    .pstat-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;color:var(--accent);}
+    .pstat-label{font-size:0.68rem;color:var(--muted);margin-top:1px;}
+    .edit-profile-btn{width:100%;margin-top:14px;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:0.84rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+    .edit-profile-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* MENU */
+    .side-menu{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .menu-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .2s;border-bottom:1px solid var(--border);font-size:0.88rem;}
+    .menu-item:last-child{border-bottom:none;}
+    .menu-item:hover{background:var(--surface);}
+    .menu-item.active{background:rgba(33,150,243,.1);color:var(--accent);}
+    .menu-icon{font-size:1.1rem;width:24px;text-align:center;}
+    .menu-badge{margin-left:auto;background:var(--danger);color:#fff;border-radius:99px;padding:1px 7px;font-size:0.68rem;font-weight:700;}
+
+    /* MAIN CONTENT */
+    .main-col{display:flex;flex-direction:column;gap:16px;}
+    .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .section-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+    .section-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:8px;}
+    .section-body{padding:16px 20px;}
+
+    /* SEARCH FRIEND */
+    .search-wrap{position:relative;}
+    .search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;padding:10px 14px 10px 38px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s;}
+    .search-wrap input:focus{border-color:var(--accent);}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem;pointer-events:none;}
+    .search-results{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-top:8px;overflow:hidden;display:none;}
+    .search-results.show{display:block;}
+    .search-item{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background .2s;border-bottom:1px solid var(--border);}
+    .search-item:last-child{border-bottom:none;}
+    .search-item:hover{background:var(--card);}
+    .si-avatar{width:38px;height:38px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:1px solid var(--border);}
+    .si-info{flex:1;min-width:0;}
+    .si-name{font-size:0.88rem;font-weight:600;margin-bottom:2px;}
+    .si-user{font-size:0.76rem;color:var(--muted);}
+    .si-btn{padding:6px 14px;border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'Inter',sans-serif;}
+    .si-btn-add{background:var(--accent);color:#fff;}
+    .si-btn-add:hover{background:#1a7fd4;}
+    .si-btn-sent{background:var(--surface);color:var(--muted);border:1px solid var(--border);cursor:not-allowed;}
+    .si-btn-friends{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);}
+
+    /* FRIEND REQUESTS */
+    .req-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+    .req-item:last-child{border-bottom:none;}
+    .req-avatar{width:44px;height:44px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;border:1px solid var(--border);}
+    .req-info{flex:1;min-width:0;}
+    .req-name{font-size:0.9rem;font-weight:600;margin-bottom:2px;}
+    .req-user{font-size:0.78rem;color:var(--muted);}
+    .req-time{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+    .req-actions{display:flex;gap:8px;}
+    .btn-accept{background:var(--green);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-accept:hover{background:#2ea043;}
+    .btn-decline{background:var(--surface);color:var(--muted);border:1px solid var(--border);padding:7px 14px;border-radius:7px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-decline:hover{border-color:var(--danger);color:var(--danger);}
+    .empty-state{text-align:center;padding:24px;color:var(--muted);font-size:0.85rem;}
+    .empty-icon{font-size:2rem;margin-bottom:8px;}
+
+    /* FRIENDS LIST */
+    .friend-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .friend-item:last-child{border-bottom:none;}
+    .friend-avatar{width:42px;height:42px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:1px solid var(--border);position:relative;}
+    .friend-online{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;border:2px solid var(--card);}
+    .friend-online.on{background:var(--green);}
+    .friend-online.off{background:var(--muted);}
+    .friend-info{flex:1;min-width:0;}
+    .friend-name{font-size:0.88rem;font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .friend-user{font-size:0.76rem;color:var(--muted);}
+    .friend-actions{display:flex;gap:6px;}
+    .fa-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;transition:all .2s;}
+    .fa-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .fa-btn.remove:hover{border-color:var(--danger);color:var(--danger);}
+
+    /* MY SERVERS */
+    .server-mini{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .server-mini:last-child{border-bottom:none;}
+    .sm-icon{width:42px;height:42px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;border:1px solid var(--border);}
+    .sm-info{flex:1;min-width:0;}
+    .sm-name{font-size:0.88rem;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .sm-meta{font-size:0.75rem;color:var(--muted);}
+    .sm-actions{display:flex;gap:6px;}
+    .sm-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:6px;font-size:0.78rem;cursor:pointer;transition:all .2s;}
+    .sm-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .status-badge{border-radius:99px;padding:2px 8px;font-size:0.7rem;font-weight:600;white-space:nowrap;}
+    .badge-pending{background:rgba(240,160,64,.15);color:var(--warn);border:1px solid rgba(240,160,64,.3);}
+    .badge-active{background:rgba(63,185,80,.1);color:var(--green);border:1px solid rgba(63,185,80,.3);}
+
+    /* RIGHT COL */
+    .right-col{display:flex;flex-direction:column;gap:16px;}
+    .widget{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+    .widget-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.88rem;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;}
+    .activity-item{display:flex;gap:10px;margin-bottom:12px;font-size:0.82rem;}
+    .act-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+    .act-dot.red{background:var(--danger);}
+    .act-text{color:var(--muted);line-height:1.5;}
+    .act-text strong{color:var(--text);}
+    .act-time{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+
+    /* MODAL */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;padding:16px;}
+    .modal-bg.open{opacity:1;pointer-events:all;}
+    .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:420px;transform:scale(.95);transition:transform .25s;max-height:90vh;overflow-y:auto;}
+    .modal-bg.open .modal{transform:scale(1);}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+    .modal-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.05rem;}
+    .modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+    .modal-close:hover{color:var(--text);}
+    .form-group{margin-bottom:16px;}
+    label{display:block;font-size:0.82rem;color:var(--muted);margin-bottom:6px;font-weight:500;}
+    input[type=text],input[type=email],textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;padding:10px 14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s;}
+    input:focus,textarea:focus{border-color:var(--accent);}
+    textarea{resize:vertical;min-height:80px;}
+    .tg-prefix-wrap{position:relative;}
+    .tg-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;pointer-events:none;}
+    input.pl-tg{padding-left:26px;}
+    .btn-save{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.92rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;}
+    .btn-save:hover{background:#1a7fd4;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:0.86rem;display:flex;align-items:center;gap:10px;z-index:300;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.ok{border-color:var(--green);}
+    .toast.err{border-color:var(--danger);}
+
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#2196f3"/><path d="M7 16.5l3.5 3.5 9-9" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10l-8 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+    TeleBoard
+  </a>
+  <div class="nav-right">
+    <button class="notif-btn" onclick="openModal('modalNotif')" title="Notifikasi">
+      🔔
+      <span class="notif-badge" id="notifCount" style="display:none">0</span>
+    </button>
+    <div class="avatar-btn" id="navAvatar">👤</div>
+    <button class="logout-btn" onclick="doLogout()">Keluar</button>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- LEFT COL -->
+  <div class="left-col">
+    <div class="profile-card">
+      <div class="profile-banner">
+        <button class="profile-banner-edit" onclick="openModal('modalEdit')">✏️ Edit</button>
+      </div>
+      <div class="profile-body">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profileAvatar">👤</div>
+          <div class="avatar-edit" onclick="triggerAvatarUpload()">📷</div>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(event)"/>
+        </div>
+        <div class="online-status"><span class="online-dot"></span>Online</div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <div class="profile-username" id="profileUsername">@...</div>
+        <div class="profile-bio" id="profileBio">Belum ada bio. Klik Edit untuk menambahkan.</div>
+        <div class="profile-stats">
+          <div class="pstat"><div class="pstat-num" id="statFriends">0</div><div class="pstat-label">Teman</div></div>
+          <div class="pstat"><div class="pstat-num" id="statServers">0</div><div class="pstat-label">Server</div></div>
+          <div class="pstat"><div class="pstat-num" id="statVotes">0</div><div class="pstat-label">Vote</div></div>
+        </div>
+        <button class="edit-profile-btn" onclick="openModal('modalEdit')">✏️ Edit Profil</button>
+      </div>
+    </div>
+
+    <div class="side-menu">
+      <div class="menu-item active" onclick="switchTab('friends')"><span class="menu-icon">👥</span>Teman<span class="menu-badge" id="reqBadge" style="display:none">0</span></div>
+      <div class="menu-item" onclick="switchTab('servers')"><span class="menu-icon">📡</span>Server Saya</div>
+      <div class="menu-item" onclick="switchTab('votes')"><span class="menu-icon">▲</span>Riwayat Vote</div>
+      <div class="menu-item" onclick="window.location.href='index.html'"><span class="menu-icon">🔍</span>Jelajahi Server</div>
+      <div class="menu-item" onclick="window.location.href='add-server.html'"><span class="menu-icon">➕</span>Tambah Server</div>
+    </div>
+  </div>
+
+  <!-- MAIN COL -->
+  <div class="main-col">
+
+    <!-- FRIENDS TAB -->
+    <div class="section-card" id="tab-friends">
+      <div class="section-head">
+        <div class="section-title">🔍 Cari Pengguna</div>
+      </div>
+      <div class="section-body">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="friendSearch" placeholder="Cari @username atau nama..." oninput="searchUsers()"/>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+
+      <div class="section-head" style="border-top:1px solid var(--border);">
+        <div class="section-title">📨 Permintaan Pertemanan <span id="reqCount" style="background:var(--danger);color:#fff;border-radius:99px;padding:1px 8px;font-size:0.72rem;margin-left:4px;">0</span></div>
+      </div>
+      <div class="section-body" style="padding-top:8px;">
+        <div id="requestsList">
+          <div class="empty-state"><div class="empty-icon">📭</div>Tidak ada permintaan pertemanan</div>
+        </div>
+      </div>
+
+      <div class="section-head" style="border-top:1px solid var(--border);">
+        <div class="section-title">👥 Daftar Teman</div>
+        <div style="font-size:0.8rem;color:var(--muted);" id="friendCountLabel">0 teman</div>
+      </div>
+      <div class="section-body" style="padding-top:8px;">
+        <div id="friendsList">
+          <div class="empty-state"><div class="empty-icon">🙁</div>Belum ada teman. Cari pengguna di atas!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVERS TAB -->
+    <div class="section-card" id="tab-servers" style="display:none;">
+      <div class="section-head">
+        <div class="section-title">📡 Server Saya</div>
+        <button onclick="window.location.href='add-server.html'" style="background:var(--accent);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:0.82rem;font-weight:600;cursor:pointer;">+ Tambah</button>
+      </div>
+      <div class="section-body" id="myServersList">
+        <div class="empty-state"><div class="empty-icon">📡</div>Belum ada server terdaftar.<br/>Tambahkan server Telegram-mu sekarang!</div>
+      </div>
+    </div>
+
+    <!-- VOTES TAB -->
+    <div class="section-card" id="tab-votes" style="display:none;">
+      <div class="section-head">
+        <div class="section-title">▲ Riwayat Vote</div>
+      </div>
+      <div class="section-body" id="voteHistory">
+        <div class="empty-state"><div class="empty-icon">▲</div>Belum ada riwayat vote.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COL -->
+  <div class="right-col">
+    <div class="widget">
+      <div class="widget-title">Aktivitas Terbaru</div>
+      <div id="activityFeed">
+        <div class="activity-item"><div class="act-dot"></div><div><div class="act-text">Bergabung di <strong>TeleBoard</strong></div><div class="act-time">Baru saja</div></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL EDIT PROFILE -->
+<div class="modal-bg" id="modalEdit">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">✏️ Edit Profil</div>
+      <button class="modal-close" onclick="closeModal('modalEdit')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Nama Lengkap</label>
+      <input type="text" id="edit_name" placeholder="Nama Lengkapmu" maxlength="60"/>
+    </div>
+    <div class="form-group">
+      <label>Username Telegram</label>
+      <div class="tg-prefix-wrap">
+        <span class="tg-prefix">@</span>
+        <input type="text" class="pl-tg" id="edit_username" placeholder="username_kamu" maxlength="32"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="edit_email" placeholder="email@kamu.com"/>
+    </div>
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea id="edit_bio" placeholder="Ceritakan tentang dirimu..." maxlength="200"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Link Telegram (opsional)</label>
+      <input type="text" id="edit_tglink" placeholder="https://t.me/username"/>
+    </div>
+    <button class="btn-save" onclick="saveProfile()">💾 Simpan Perubahan</button>
+  </div>
+</div>
+
+<!-- MODAL NOTIFIKASI -->
+<div class="modal-bg" id="modalNotif">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">🔔 Notifikasi</div>
+      <button class="modal-close" onclick="closeModal('modalNotif')">✕</button>
+    </div>
+    <div id="notifList"><div class="empty-state"><div class="empty-icon">🔔</div>Tidak ada notifikasi</div></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'backend/api.php';
+let currentUser = null;
+let friends = [];
+let requests = [];
+let myServers = [];
+let searchTimer;
+let notifications = [];
+
+// ─── INIT ────────────────────────────────────────────────────
+window.onload = () => {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location.href = 'login.html'; return; }
+  const u = JSON.parse(localStorage.getItem('user') || '{}');
+  currentUser = u;
+  renderProfile(u);
+  loadFriends();
+  loadRequests();
+  loadMyServers();
+  renderNotifications();
+};
+
+function renderProfile(u) {
+  document.getElementById('profileName').textContent = u.full_name || 'Pengguna';
+  document.getElementById('profileUsername').textContent = '@' + (u.tg_username || 'unknown');
+  document.getElementById('profileBio').textContent = u.bio || 'Belum ada bio. Klik Edit untuk menambahkan.';
+  document.getElementById('navAvatar').textContent = (u.full_name || 'U')[0].toUpperCase();
+  document.getElementById('profileAvatar').textContent = (u.full_name || 'U')[0].toUpperCase();
+  if (u.avatar) {
+    document.getElementById('profileAvatar').innerHTML = `<img src="${u.avatar}" alt="avatar"/>`;
+    document.getElementById('navAvatar').innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av"/>`;
+  }
+  document.getElementById('edit_name').value = u.full_name || '';
+  document.getElementById('edit_username').value = u.tg_username || '';
+  document.getElementById('edit_email').value = u.email || '';
+  document.getElementById('edit_bio').value = u.bio || '';
+  document.getElementById('edit_tglink').value = u.tg_link || '';
+}
+
+// ─── TABS ────────────────────────────────────────────────────
+function switchTab(name) {
+  ['friends', 'servers', 'votes'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.menu-item').forEach((el, i) => {
+    el.classList.toggle('active', ['friends', 'servers', 'votes'][i] === name);
+  });
+}
+
+// ─── AVATAR ──────────────────────────────────────────────────
+function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
+function previewAvatar(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const src = ev.target.result;
+    document.getElementById('profileAvatar').innerHTML = `<img src="${src}" alt="avatar"/>`;
+    document.getElementById('navAvatar').innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av"/>`;
+    currentUser.avatar = src;
+    localStorage.setItem('user', JSON.stringify(currentUser));
+    toast('✅ Foto profil diperbarui!', 'ok');
+    uploadAvatar(file);
+  };
+  reader.readAsDataURL(file);
+}
+async function uploadAvatar(file) {
+  try {
+    const fd = new FormData(); fd.append('avatar', file);
+    await fetch(`${API}?action=upload_avatar`, { method: 'POST', headers: { 'Authorization': localStorage.getItem('token') }, body: fd });
+  } catch {}
+}
+
+// ─── SEARCH USERS ────────────────────────────────────────────
+function searchUsers() {
+  clearTimeout(searchTimer);
+  const q = document.getElementById('friendSearch').value.trim();
+  const box = document.getElementById('searchResults');
+  if (!q) { box.classList.remove('show'); return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}?action=search_users&q=${encodeURIComponent(q)}`, {
+        headers: { 'Authorization': localStorage.getItem('token') }
+      });
+      const d = await r.json();
+      renderSearchResults(d.users || []);
+    } catch {
+      renderSearchResults([]);
+    }
+  }, 500);
+}
+
+function renderSearchResults(users) {
+  const box = document.getElementById('searchResults');
+  if (!users.length) {
+    box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:0.84rem;">Pengguna tidak ditemukan</div>';
+    box.classList.add('show'); return;
+  }
+  box.innerHTML = users.map(u => {
+    let btnHtml = '';
+    if (u.is_friend) btnHtml = `<button class="si-btn si-btn-friends" disabled>✓ Teman</button>`;
+    else if (u.request_sent) btnHtml = `<button class="si-btn si-btn-sent" disabled>✓ Terkirim</button>`;
+    else btnHtml = `<button class="si-btn si-btn-add" onclick="sendFriendReq(${u.id},this)">+ Tambah</button>`;
+    return `
+      <div class="search-item">
+        <div class="si-avatar">${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;border-radius:50%;" />` : (u.full_name[0] || '?').toUpperCase()}</div>
+        <div class="si-info"><div class="si-name">${u.full_name}</div><div class="si-user">@${u.tg_username}</div></div>
+        ${btnHtml}
+      </div>`;
+  }).join('');
+  box.classList.add('show');
+}
+
+async function sendFriendReq(userId, btn) {
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${API}?action=send_friend_request`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+      body: JSON.stringify({ to_user_id: userId })
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error();
+  } catch {}
+  btn.className = 'si-btn si-btn-sent'; btn.textContent = '✓ Terkirim'; btn.disabled = true;
+  addActivity('Mengirim permintaan pertemanan');
+  toast('📨 Permintaan pertemanan terkirim!', 'ok');
+}
+
+// ─── FRIEND REQUESTS ─────────────────────────────────────────
+async function loadRequests() {
+  try {
+    const r = await fetch(`${API}?action=get_friend_requests`, {
+      headers: { 'Authorization': localStorage.getItem('token') }
+    });
+    const d = await r.json();
+    requests = d.requests || [];
+  } catch {
+    requests = [];
+  }
+  renderRequests();
+}
+
+function renderRequests() {
+  const el = document.getElementById('requestsList');
+  const count = document.getElementById('reqCount');
+  const badge = document.getElementById('reqBadge');
+  count.textContent = requests.length;
+  if (requests.length > 0) { badge.style.display = 'flex'; badge.textContent = requests.length; }
+  else { badge.style.display = 'none'; }
+  if (!requests.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Tidak ada permintaan pertemanan</div>'; return;
+  }
+  el.innerHTML = requests.map(req => `
+    <div class="req-item" id="req-${req.id}">
+      <div class="req-avatar">${req.from_user.avatar ? `<img src="${req.from_user.avatar}" style="width:100%;height:100%;border-radius:50%;"/>` : req.from_user.full_name[0].toUpperCase()}</div>
+      <div class="req-info">
+        <div class="req-name">${req.from_user.full_name}</div>
+        <div class="req-user">@${req.from_user.tg_username}</div>
+        <div class="req-time">🕐 ${req.created_at}</div>
+      </div>
+      <div class="req-actions">
+        <button class="btn-accept" onclick="acceptReq(${req.id}, ${req.from_user.id}, '${req.from_user.full_name}')">✓</button>
+        <button class="btn-decline" onclick="declineReq(${req.id})">✗</button>
+      </div>
+    </div>`).join('');
+}
+
+async function acceptReq(reqId, fromId, fromName) {
+  try {
+    await fetch(`${API}?action=accept_friend_request`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+      body: JSON.stringify({ request_id: reqId })
+    });
+  } catch {}
+  document.getElementById(`req-${reqId}`).remove();
+  requests = requests.filter(r => r.id !== reqId);
+  renderRequests();
+  toast(`✅ Kamu dan ${fromName} kini berteman!`, 'ok');
+  addActivity(`Menerima permintaan pertemanan dari <strong>${fromName}</strong>`);
+  loadFriends();
+}
+
+async function declineReq(reqId) {
+  try {
+    await fetch(`${API}?action=decline_friend_request`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+      body: JSON.stringify({ request_id: reqId })
+    });
+  } catch {}
+  document.getElementById(`req-${reqId}`).remove();
+  requests = requests.filter(r => r.id !== reqId);
+  renderRequests();
+  toast('Permintaan ditolak.', '');
+}
+
+// ─── FRIENDS LIST ─────────────────────────────────────────────
+async function loadFriends() {
+  try {
+    const r = await fetch(`${API}?action=get_friends`, {
+      headers: { 'Authorization': localStorage.getItem('token') }
+    });
+    const d = await r.json();
+    friends = d.friends || [];
+  } catch {
+    friends = [];
+  }
+  renderFriends();
+  document.getElementById('statFriends').textContent = friends.length;
+}
+
+function renderFriends() {
+  const el = document.getElementById('friendsList');
+  document.getElementById('friendCountLabel').textContent = `${friends.length} teman`;
+  if (!friends.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🙁</div>Belum ada teman. Cari pengguna di atas!</div>'; return;
+  }
+  el.innerHTML = friends.map(f => `
+    <div class="friend-item" id="friend-${f.id}">
+      <div class="friend-avatar">
+        ${f.avatar ? `<img src="${f.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>` : (f.full_name[0] || '?').toUpperCase()}
+        <div class="friend-online ${f.is_online ? 'on' : 'off'}"></div>
+      </div>
+      <div class="friend-info">
+        <div class="friend-name">${f.full_name}</div>
+        <div class="friend-user">@${f.tg_username} · ${f.is_online ? '<span style="color:var(--green)">Online</span>' : 'Offline'}</div>
+      </div>
+      <div class="friend-actions">
+        <button class="fa-btn" onclick="window.open('https://t.me/${f.tg_username}','_blank')" title="Buka Telegram">📱</button>
+        <button class="fa-btn remove" onclick="removeFriend(${f.id},'${f.full_name}')" title="Hapus teman">✗</button>
+      </div>
+    </div>`).join('');
+}
+
+async function removeFriend(fid, fname) {
+  if (!confirm(`Hapus ${fname} dari daftar teman?`)) return;
+  try {
+    await fetch(`${API}?action=remove_friend`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+      body: JSON.stringify({ friend_id: fid })
+    });
+  } catch {}
+  friends = friends.filter(f => f.id !== fid);
+  renderFriends();
+  document.getElementById('statFriends').textContent = friends.length;
+  toast(`${fname} dihapus dari daftar teman.`, '');
+}
+
+// ─── MY SERVERS ──────────────────────────────────────────────
+async function loadMyServers() {
+  try {
+    const r = await fetch(`${API}?action=get_my_servers`, {
+      headers: { 'Authorization': localStorage.getItem('token') }
+    });
+    const d = await r.json();
+    const allServers = d.servers || [];
+
+    // Notif untuk server yang di-reject (hanya sekali per server)
+    const userId = currentUser.id || 'guest';
+    allServers.filter(s => s.status === 'rejected').forEach(s => {
+      const key = `rejected_notif_${userId}_${s.id}`;
+      if (!localStorage.getItem(key)) {
+        const reason = s.reject_reason || 'Tidak sesuai dengan kebijakan TeleBoard';
+        addNotification('❌', `Server <strong>${s.name}</strong> ditolak admin. Alasan: "${reason}"`, 'Baru saja');
+        addActivity(`Server <strong>${s.name}</strong> ditolak: "${reason}"`, true);
+        localStorage.setItem(key, '1');
+      }
+    });
+
+    // Hanya tampilkan active & pending
+    myServers = allServers.filter(s => s.status !== 'rejected');
+  } catch {
+    myServers = [];
+  }
+  renderMyServers();
+  document.getElementById('statServers').textContent = myServers.length;
+}
+
+function renderMyServers() {
+  const el = document.getElementById('myServersList');
+  if (!myServers.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📡</div>Belum ada server terdaftar.<br/><br/><button onclick="window.location.href='add-server.html'" style="background:var(--accent);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;">+ Tambah Server</button></div>`;
+    return;
+  }
+  el.innerHTML = myServers.map(s => {
+    const isImg = s.emoji && (s.emoji.startsWith('http') || s.emoji.startsWith('/'));
+    const iconHtml = isImg ? `<img src="${s.emoji}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"/>` : (s.emoji || '📡');
+    const badgeHtml = s.status === 'pending'
+      ? `<span class="status-badge badge-pending">⏳ Pending</span>`
+      : `<span class="status-badge badge-active">✓ Aktif</span>`;
+    const actionBtns = s.status === 'active'
+      ? `<button class="sm-btn" onclick="window.location.href='server.html?id=${s.id}'">Lihat</button>
+         <button class="sm-btn" onclick="bumpServer(${s.id},this)">🚀 Bump</button>`
+      : `<button class="sm-btn" style="cursor:default;opacity:.5;" disabled>Menunggu</button>`;
+    return `
+      <div class="server-mini">
+        <div class="sm-icon">${iconHtml}</div>
+        <div class="sm-info">
+          <div class="sm-name">${s.name} ${badgeHtml}</div>
+          <div class="sm-meta">👥 ${(s.members || 0).toLocaleString()} member · ▲ ${s.votes || 0} vote</div>
+        </div>
+        <div class="sm-actions">${actionBtns}</div>
+      </div>`;
+  }).join('');
+}
+
+async function bumpServer(id, btn) {
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const r = await fetch(`${API}?action=bump_server`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+      body: JSON.stringify({ server_id: id })
+    });
+    const d = await r.json();
+    if (!d.success) { toast(d.message || 'Gagal bump.', 'err'); btn.textContent = '🚀 Bump'; btn.disabled = false; return; }
+  } catch {}
+  btn.textContent = '✓ Bumped!';
+  setTimeout(() => { btn.textContent = '🚀 Bump'; btn.disabled = false; }, 30 * 60 * 1000);
+  toast('🚀 Server berhasil di-bump!', 'ok');
+  addActivity('Men-bump server ke posisi teratas');
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────
+function addNotification(icon, text, time) {
+  notifications.unshift({ icon, text, time });
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const badge = document.getElementById('notifCount');
+  const list = document.getElementById('notifList');
+  if (!notifications.length) {
+    badge.style.display = 'none';
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div>Tidak ada notifikasi</div>';
+    return;
+  }
+  badge.style.display = 'flex';
+  badge.textContent = notifications.length > 9 ? '9+' : notifications.length;
+  list.innerHTML = notifications.map(n => `
+    <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:1.4rem;flex-shrink:0;">${n.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.86rem;line-height:1.5;">${n.text}</div>
+        <div style="font-size:0.74rem;color:var(--muted);margin-top:3px;">${n.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── SAVE PROFILE ─────────────────────────────────────────────
+async function saveProfile() {
+  const data = {
+    full_name: document.getElementById('edit_name').value.trim(),
+    tg_username: document.getElementById('edit_username').value.trim(),
+    email: document.getElementById('edit_email').value.trim(),
+    bio: document.getElementById('edit_bio').value.trim(),
+    tg_link: document.getElementById('edit_tglink').value.trim(),
+  };
+  try {
+    await fetch(`${API}?action=update_profile`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+      body: JSON.stringify(data)
+    });
+  } catch {}
+  Object.assign(currentUser, data);
+  localStorage.setItem('user', JSON.stringify(currentUser));
+  renderProfile(currentUser);
+  closeModal('modalEdit');
+  toast('✅ Profil berhasil diperbarui!', 'ok');
+  addActivity('Memperbarui profil');
+}
+
+// ─── ACTIVITY FEED ────────────────────────────────────────────
+function addActivity(text, isError = false) {
+  const feed = document.getElementById('activityFeed');
+  const item = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML = `<div class="act-dot${isError ? ' red' : ''}"></div><div><div class="act-text">${text}</div><div class="act-time">Baru saja</div></div>`;
+  feed.insertBefore(item, feed.firstChild);
+}
+
+// ─── MODAL / TOAST ───────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ─── LOGOUT ──────────────────────────────────────────────────
+function doLogout() {
+  if (!confirm('Yakin ingin keluar?')) return;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+</script>
+</body>
+</html>

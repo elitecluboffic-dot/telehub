@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title id="pageTitle">Artikel – TeleBoard</title>
+  <meta name="description" id="pageDesc" content="Artikel TeleBoard."/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" id="canonicalLink" href="https://telehub.nfy.fyi/artikel.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:url" id="ogUrl" content="https://telehub.nfy.fyi/artikel.html"/>
+  <meta property="og:title" id="ogTitle" content="Artikel – TeleBoard"/>
+  <meta property="og:description" id="ogDesc" content="Artikel TeleBoard."/>
+  <meta property="og:image" id="ogImage" content="https://telehub.nfy.fyi/og-image.png"/>
+  <meta property="og:site_name" content="TeleBoard"/>
+
+  <link rel="icon" type="image/png" sizes="70x70" href="/telehub-70.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/telehub-16.png"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/telehub-57.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#2196f3"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --card: #1c2333; --border: #30363d;
+      --accent: #2196f3; --accent2: #00bcd4; --text: #e6edf3; --muted: #8b949e;
+      --green: #3fb950; --danger: #f85149; --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    .nav-logo svg { width: 32px; height: 32px; }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; transition: all .2s; }
+    .nav-links a:hover { color: var(--text); background: var(--card); }
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #1a7fd4; }
+    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-outline:hover { background: var(--accent); color: #fff; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all .2s; }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .nav-avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; overflow: hidden; cursor: pointer; }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 0.85rem; margin-bottom: 24px; transition: color .2s; }
+    .back-link:hover { color: var(--accent); }
+
+    /* ─── FIX: thumbnail kini punya height TETAP (bukan cuma max-height),
+       ditambah overflow:hidden, supaya gambar dengan rasio aspek apapun
+       (potret/infografis tinggi, lanskap, dsb) selalu ke-crop rapi
+       dan tidak overflow/numpuk ke konten di bawahnya. ─── */
+    .article-thumb {
+      width: 100%;
+      height: 280px;
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: var(--muted);
+      overflow: hidden;
+    }
+    .article-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .article-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .article-tag { padding: 3px 12px; border-radius: 99px; background: rgba(33,150,243,.12); color: var(--accent); font-size: 0.72rem; font-weight: 600; }
+
+    .article-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; line-height: 1.3; margin-bottom: 14px; }
+
+    .article-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .article-meta span { display: flex; align-items: center; gap: 5px; }
+
+    .article-body { font-size: 1rem; line-height: 1.85; color: #c9d1d9; }
+    .article-body p { margin-bottom: 16px; }
+    .article-body h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text); margin: 32px 0 14px; }
+    .article-body h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 600; color: var(--text); margin: 26px 0 12px; }
+    .article-body a { color: var(--accent); }
+    .article-body blockquote { border-left: 3px solid var(--accent); padding-left: 16px; color: var(--muted); margin: 16px 0; }
+    .article-body ul, .article-body ol { margin: 0 0 16px 22px; }
+    .article-body img { max-width: 100%; border-radius: 8px; margin: 16px 0; }
+    .article-body pre, .article-body code { background: var(--card); border-radius: 6px; padding: 2px 6px; font-size: 0.88rem; }
+    .article-body pre { padding: 14px; overflow-x: auto; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    .share-wrap { display: flex; gap: 10px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+    /* STATE: loading / error */
+    .state-box { text-align: center; padding: 80px 20px; color: var(--muted); }
+    .state-box .icon { font-size: 3rem; margin-bottom: 16px; }
+    .state-box h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; margin-bottom: 10px; color: var(--text); }
+    .skeleton-line { height: 16px; border-radius: 6px; background: linear-gradient(90deg,var(--surface) 25%,var(--card) 50%,var(--surface) 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; margin-bottom: 10px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skeleton-thumb { height: 280px; border-radius: var(--radius); margin-bottom: 28px; background: linear-gradient(90deg,var(--surface) 25%,var(--card) 50%,var(--surface) 75%); background-size:200% 100%; animation: shimmer 1.4s infinite; }
+
+    footer { background: var(--surface); border-top: 1px solid var(--border); text-align: center; padding: 28px; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @media(max-width:600px) {
+      nav { padding: 12px 16px; }
+      .nav-links a:not(.btn) { display: none; }
+      .container { padding: 28px 16px 50px; }
+      .article-title { font-size: 1.45rem; }
+      .article-thumb { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#2196f3"/>
+      <path d="M7 16.5l3.5 3.5 9-9" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 10l-8 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    TeleBoard
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+</nav>
+
+<div class="container">
+  <a href="news.html" class="back-link">← Kembali ke News</a>
+
+  <div id="loadingState">
+    <div class="skeleton-thumb"></div>
+    <div class="skeleton-line" style="width:60%"></div>
+    <div class="skeleton-line" style="width:90%;height:28px;margin-bottom:20px"></div>
+    <div class="skeleton-line" style="width:40%"></div>
+  </div>
+
+  <div id="errorState" class="state-box" style="display:none">
+    <div class="icon">⚠️</div>
+    <h2 id="errorTitle">Artikel tidak ditemukan</h2>
+    <p id="errorMsg">Artikel mungkin sudah dihapus atau belum disetujui admin.</p>
+    <div style="margin-top:20px">
+      <a href="news.html" class="btn btn-primary">Lihat Artikel Lain</a>
+    </div>
+  </div>
+
+  <article id="articleContent" style="display:none">
+    <div class="article-thumb" id="articleThumb">📰</div>
+    <div class="article-tags" id="articleTags"></div>
+    <h1 class="article-title" id="articleTitle"></h1>
+    <div class="article-meta">
+      <span id="metaAuthor">✍️</span>
+      <span id="metaDate">📅</span>
+      <span id="metaReadTime">⏱️</span>
+    </div>
+    <div class="article-body" id="articleBody"></div>
+
+    <div class="share-wrap">
+      <a class="btn btn-outline" id="shareTwitter" target="_blank" rel="noopener">🐦 Bagikan</a>
+      <button class="btn btn-outline" onclick="copyLink()">🔗 Salin Link</button>
+    </div>
+  </article>
+</div>
+
+<footer>
+  &copy; 2025 TeleBoard &mdash; <a href="privacy.html">Kebijakan Privasi</a> · <a href="terms.html">Syarat Layanan</a>
+</footer>
+
+<script>
+const API_NEWS = 'backend/api_news.php';
+
+/* ─── NAV ─── */
+function renderNav() {
+  const token = localStorage.getItem('token');
+  const el = document.getElementById('navLinks');
+  if (token) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const initial = (user.full_name || 'U')[0].toUpperCase();
+    const avatarHtml = user.avatar ? `<img src="${user.avatar}" alt="avatar"/>` : initial;
+    el.innerHTML = `
+      <a href="index.html">Beranda</a>
+      <a href="news.html">News</a>
+      <a href="dashboard.html">Dashboard</a>
+      <div class="nav-avatar" onclick="window.location.href='dashboard.html'">${avatarHtml}</div>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>`;
+  } else {
+    el.innerHTML = `
+      <a href="index.html">Beranda</a>
+      <a href="news.html">News</a>
+      <a href="login.html" class="btn btn-outline">Masuk</a>
+      <a href="register.html" class="btn btn-primary">Daftar</a>`;
+  }
+}
+
+function doLogout() {
+  if (!confirm('Yakin ingin keluar?')) return;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('articleContent').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+  if (msg) document.getElementById('errorMsg').textContent = msg;
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = event.target;
+    const old = btn.textContent;
+    btn.textContent = '✅ Tersalin!';
+    setTimeout(() => btn.textContent = old, 1500);
+  });
+}
+
+/* ─── LOAD ARTICLE ─── */
+async function loadArticle() {
+  const slug = getParam('slug');
+  const id   = getParam('id');
+
+  if (!slug && !id) {
+    showError('Artikel tidak ditemukan. Parameter slug atau id tidak ada.');
+    return;
+  }
+
+  const qs = id ? `id=${encodeURIComponent(id)}` : `slug=${encodeURIComponent(slug)}`;
+
+  try {
+    const r = await fetch(`${API_NEWS}?action=get_article&${qs}`);
+    const d = await r.json();
+    if (!d.success) {
+      showError(d.message || 'Artikel tidak ditemukan atau belum disetujui.');
+      return;
+    }
+    renderArticle(d.article);
+  } catch (e) {
+    showError('Gagal terhubung ke server. Coba muat ulang halaman.');
+  }
+}
+
+function renderArticle(a) {
+  document.title = `${a.title} – TeleBoard`;
+  document.getElementById('pageTitle').textContent = `${a.title} – TeleBoard`;
+  document.getElementById('pageDesc').setAttribute('content', a.description || '');
+  document.getElementById('ogTitle').setAttribute('content', a.title);
+  document.getElementById('ogDesc').setAttribute('content', a.description || '');
+  document.getElementById('ogUrl').setAttribute('content', window.location.href);
+  document.getElementById('canonicalLink').setAttribute('href', window.location.href);
+  if (a.thumbnail) document.getElementById('ogImage').setAttribute('content', a.thumbnail);
+
+  const thumbEl = document.getElementById('articleThumb');
+  if (a.thumbnail) {
+    thumbEl.innerHTML = `<img src="${escHtml(a.thumbnail)}" alt="${escHtml(a.title)}" onerror="this.parentElement.textContent='📰'"/>`;
+  } else {
+    thumbEl.style.display = 'none';
+  }
+
+  const tags = (a.tags || '').split(',').filter(Boolean);
+  document.getElementById('articleTags').innerHTML = tags.map(t => `<span class="article-tag">${escHtml(t.trim())}</span>`).join('');
+
+  document.getElementById('articleTitle').textContent = a.title;
+  document.getElementById('metaAuthor').textContent = `✍️ ${a.author}`;
+  document.getElementById('metaDate').textContent = `📅 ${a.date_fmt}`;
+  document.getElementById('metaReadTime').textContent = `⏱️ ${a.read_time} menit baca`;
+
+  // content sudah disanitasi di backend (sanitizeHtml)
+  document.getElementById('articleBody').innerHTML = a.content;
+
+  document.getElementById('shareTwitter').href =
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(a.title)}&url=${encodeURIComponent(window.location.href)}`;
+
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'none';
+  document.getElementById('articleContent').style.display = 'block';
+}
+
+renderNav();
+loadArticle();
+</script>
+</body>
+</html>
