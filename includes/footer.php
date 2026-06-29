@@ -1,6 +1,16 @@
 </div>
 <footer>
-  &copy; <?= date('Y') ?> <?= SITE_NAME ?> &middot; Direktori &amp; Custom Card untuk Channel, Grup &amp; User Telegram
+  <div style="margin-bottom:8px">
+    <a href="<?= SITE_URL ?>/index.php" style="display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--text)">
+      <img src="<?= SITE_URL ?>/assets/img/telehub-16.png" style="height:20px;vertical-align:middle"> <?= SITE_NAME ?>
+    </a>
+  </div>
+  <div style="color:var(--text-dim);font-size:12px;margin-bottom:10px">
+    © <?= date('Y') ?> · Temukan & Daftarkan Channel Telegram Kamu
+  </div>
+  <div>
+    <a href="<?= SITE_URL ?>/submit-article.php" style="color:var(--tg-blue);font-size:12px;font-weight:600">✍️ Tulis Artikel</a>
+  </div>
 </footer>
 </body>
 </html>
