@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'Artikel';
-$metaDesc = 'Baca artikel seputar Telegram, komunitas, dan tips channel dari TeleCard.';
+$metaDesc = 'Artikel seputar Telegram dan tips channel, ditulis oleh para member TeleCard. Siapa pun bisa kontribusi artikel.';
 $metaKeywords = 'artikel telegram, tips channel telegram, komunitas telegram';
 $category = $_GET['category'] ?? '';
 $sql = "SELECT * FROM articles WHERE status='approved'";
@@ -18,8 +18,8 @@ $categories = $pdo->query("SELECT DISTINCT category FROM articles WHERE status='
 include __DIR__ . '/includes/header.php';
 ?>
 <div class="article-hero">
-  <h1>Artikel & <span>Tips</span></h1>
-  <p>Kumpulan artikel seputar Telegram, komunitas, dan tips mengelola channel</p>
+  <h1>News <span>TeleHub</span></h1>
+  <p>Artikel seputar Telegram dan tips mengelola channel, ditulis langsung oleh komunitas TeleCard. Punya pengalaman atau tips? Yuk, tulis dan kirim artikelmu!</p>
   <a href="submit-article.php" class="btn btn-primary">✍️ Tulis Artikel</a>
 </div>
 <?php if (!empty($categories)): ?>
