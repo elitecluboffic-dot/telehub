@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/ipguard/IPGuard.php';
+(new IPGuard())->protect();
 $pageTitle = 'Beranda';
 $metaDesc = 'TeleCard adalah direktori card custom untuk komunitas Telegram. Temukan dan daftarkan channel, grup, serta user Telegram kamu di sini.';
 $metaKeywords = 'telegram, channel telegram, grup telegram, direktori telegram, telecard, card telegram';
