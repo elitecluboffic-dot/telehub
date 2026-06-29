@@ -1,61 +1,53 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
-$pageTitle = 'Beranda';
-$metaDesc = 'TeleCard adalah direktori card custom untuk komunitas Telegram. Temukan dan daftarkan channel, grup, serta user Telegram kamu di sini.';
-$metaKeywords = 'telegram, channel telegram, grup telegram, direktori telegram, telecard, card telegram';
-$stmt = $pdo->query("SELECT * FROM card_submissions WHERE status='approved' ORDER BY created_at DESC LIMIT 6");
-$cards = $stmt->fetchAll();
-include __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/functions.php';
+$user = isLoggedIn() ? currentUser() : null;
 ?>
-<div class="hero">
-  <h1>Buat & Temukan <span>Custom Card</span><br>Channel, Grup & User Telegram</h1>
-  <p>TeleCard adalah direktori card custom untuk komunitas Telegram kamu. Daftar, isi form, dan biarkan card kamu tampil di galeri publik</p>
-  <div class="hero-actions">
-    <a href="register.php" class="btn btn-primary">Mulai Sekarang</a>
-    <a href="cards.php" class="btn btn-outline">Lihat Semua Card</a>
-  </div>
-  <form class="search-bar" action="cards.php" method="get">
-    <input type="text" name="q" placeholder="Cari channel, grup, atau user Telegram...">
-    <button type="submit">Cari</button>
-  </form>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><?= isset($pageTitle) ? clean($pageTitle) . ' - ' . SITE_NAME : SITE_NAME ?></title>
+<!-- SEO -->
+<meta name="description" content="<?= isset($metaDesc) ? clean($metaDesc) : 'TeleCard - Direktori card custom untuk channel, grup & user Telegram.' ?>">
+<meta name="keywords" content="<?= isset($metaKeywords) ? clean($metaKeywords) : 'telegram, channel, grup, direktori, telecard' ?>">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="<?= SITE_URL . strtok($_SERVER['REQUEST_URI'], '?') ?>">
+<!-- Open Graph -->
+<meta property="og:title" content="<?= isset($pageTitle) ? clean($pageTitle) . ' - ' . SITE_NAME : SITE_NAME ?>">
+<meta property="og:description" content="<?= isset($metaDesc) ? clean($metaDesc) : 'TeleCard - Direktori card custom untuk channel, grup & user Telegram.' ?>">
+<meta property="og:url" content="<?= SITE_URL . $_SERVER['REQUEST_URI'] ?>">
+<meta property="og:type" content="website">
+<meta property="og:image" content="<?= SITE_URL ?>/assets/img/Logo-Telehub.png">
+<meta property="og:site_name" content="<?= SITE_NAME ?>">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<?= isset($pageTitle) ? clean($pageTitle) . ' - ' . SITE_NAME : SITE_NAME ?>">
+<meta name="twitter:description" content="<?= isset($metaDesc) ? clean($metaDesc) : 'TeleCard - Direktori card custom untuk channel, grup & user Telegram.' ?>">
+<meta name="twitter:image" content="<?= SITE_URL ?>/assets/img/Logo-Telehub.png">
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="<?= SITE_URL ?>/assets/img/telehub-16.png">
+<link rel="apple-touch-icon" href="<?= SITE_URL ?>/assets/img/telehub-57.png">
+<link rel="icon" type="image/png" href="<?= SITE_URL ?>/assets/img/telehub-70.png">
+<link rel="icon" type="image/png" href="<?= SITE_URL ?>/assets/img/telehub-72.png">
+<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
+</head>
+<body>
+<div class="navbar container">
+  <a href="<?= SITE_URL ?>/index.php" class="brand">
+    <img src="<?= SITE_URL ?>/assets/img/telehub-16.png" alt="<?= SITE_NAME ?>" style="height:32px;vertical-align:middle;margin-right:6px">
+    <?= SITE_NAME ?>
+  </a>
+  <nav>
+    <a href="<?= SITE_URL ?>/index.php">Beranda</a>
+    <a href="<?= SITE_URL ?>/cards.php">Jelajahi Card</a>
+    <?php if ($user): ?>
+      <a href="<?= SITE_URL ?>/dashboard.php">Dashboard</a>
+      <a href="<?= SITE_URL ?>/logout.php" class="btn btn-outline btn-sm">Logout (<?= clean($user['username']) ?>)</a>
+    <?php else: ?>
+      <a href="<?= SITE_URL ?>/login.php" class="btn btn-outline btn-sm">Login</a>
+      <a href="<?= SITE_URL ?>/register.php" class="btn btn-primary btn-sm">Daftar</a>
+    <?php endif; ?>
+  </nav>
 </div>
-<h2 style="margin-top:50px;">Card Terbaru</h2>
-<div class="card-grid">
-  <?php if (empty($cards)): ?>
-    <p style="color:var(--text-dim)">Belum ada card yang disetujui. Jadilah yang pertama!</p>
-  <?php endif; ?>
-  <?php foreach ($cards as $c): ?>
-    <div class="tcard" style="border-top:3px solid <?= clean($c['theme_color'] ?? '#2AABEE') ?>">
-      <div class="tcard-top">
-        <?php if ($c['image_path']): ?>
-          <img class="tcard-avatar" src="<?= UPLOAD_URL . clean($c['image_path']) ?>">
-        <?php else: ?>
-          <div class="tcard-avatar" style="background:<?= clean($c['theme_color'] ?? '#2AABEE') ?>"></div>
-        <?php endif; ?>
-        <div>
-          <div class="tcard-title">
-            <?= clean($c['name']) ?>
-            <span class="type-badge" style="background:<?= badgeColorByType($c['type']) ?>"><?= clean($c['type']) ?></span>
-            <?php if (!empty($c['is_verified'])): ?>
-              <span title="Verified" style="color:#1d9bf0;font-size:15px;font-weight:bold">✓</span>
-            <?php endif; ?>
-          </div>
-          <div class="tcard-meta"><?= $c['member_count'] ? clean($c['member_count']) . ' member' : '' ?></div>
-        </div>
-      </div>
-      <?php if ($c['tags']): ?>
-        <div class="tcard-tags">
-          <?php foreach (array_slice(array_filter(array_map('trim', explode(',', $c['tags']))), 0, 4) as $t): ?>
-            <span class="tag-pill"><?= clean($t) ?></span>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-      <div class="tcard-desc"><?= clean(mb_strimwidth($c['description'] ?? '', 0, 110, '...')) ?></div>
-      <div class="tcard-footer">
-        <span></span>
-        <a href="<?= clean($c['telegram_link']) ?>" target="_blank" class="btn btn-primary btn-sm">Join &rarr;</a>
-      </div>
-    </div>
-  <?php endforeach; ?>
-</div>
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<div class="container">
