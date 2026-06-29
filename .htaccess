@@ -1,0 +1,21 @@
+# ===========================================
+# .htaccess ROOT - taruh di htdocs/ (root)
+# ===========================================
+
+# Matikan directory listing
+Options -Indexes
+
+# Blokir akses langsung ke file sensitif (sql, log, md, dll)
+<FilesMatch "\.(sql|md|log|env|ini|bak)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Custom error page balik ke homepage
+ErrorDocument 403 /index.php
+ErrorDocument 404 /index.php
