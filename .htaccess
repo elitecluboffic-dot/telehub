@@ -5,8 +5,55 @@
 # Matikan directory listing
 Options -Indexes
 
-# Blokir akses langsung ke file sensitif (sql, log, md, dll)
-<FilesMatch "\.(sql|md|log|env|ini|bak)$">
+# ── Redirect www ke non-www ──────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^www\.telehub\.nfy\.fyi$ [NC]
+    RewriteRule ^(.*)$ https://telehub.nfy.fyi/$1 [R=301,L]
+</IfModule>
+
+# ── Paksa HTTPS ─────────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# ── Blokir request dari luar domain lo ──────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{HTTP_HOST} !^telehub\.nfy\.fyi$ [NC]
+    RewriteRule ^ - [F,L]
+
+    RewriteCond %{HTTP:Origin} !^$
+    RewriteCond %{HTTP:Origin} !^https?://telehub\.nfy\.fyi$ [NC]
+    RewriteRule ^ - [F,L]
+
+    RewriteCond %{HTTP:Referer} !^$
+    RewriteCond %{HTTP:Referer} !^https?://telehub\.nfy\.fyi [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# ── Blokir cURL, bot, scraper ────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_USER_AGENT} ^-?$ [NC]
+    RewriteRule ^ - [F,L]
+
+    RewriteCond %{HTTP_USER_AGENT} (curl|wget|python-requests|python-urllib|libwww-perl|scrapy|nikto|sqlmap|nmap|masscan|zgrab|nuclei|dirbuster|gobuster|hydra|burpsuite) [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# ── Blokir akses langsung ke folder includes/ ────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^includes/ - [F,L]
+    RewriteRule ^admin/includes/ - [F,L]
+</IfModule>
+
+# ── Blokir akses langsung ke file sensitif ───────────────────────
+<FilesMatch "\.(sql|md|log|env|ini|bak|sh|git|DS_Store)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -16,6 +63,16 @@ Options -Indexes
     </IfModule>
 </FilesMatch>
 
-# Custom error page balik ke homepage
+# ── Security Headers ─────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'self' https://telehub.nfy.fyi; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    Header always edit Set-Cookie (.*) "$1; SameSite=Strict; Secure"
+</IfModule>
+
+# ── Custom error page ────────────────────────────────────────────
 ErrorDocument 403 /index.php
 ErrorDocument 404 /index.php
