@@ -45,12 +45,19 @@ include __DIR__ . '/includes/header.php';
   <?php endif; ?>
   <?php foreach ($articles as $a): ?>
     <a href="article.php?slug=<?= urlencode($a['slug']) ?>" class="article-card">
-      <div class="article-card-cat"><?= clean($a['category']) ?></div>
-      <h2 class="article-card-title"><?= clean($a['title']) ?></h2>
-      <p class="article-card-excerpt"><?= clean(mb_strimwidth(strip_tags($a['content']), 0, 120, '...')) ?></p>
-      <div class="article-card-meta">
-        <span>✍️ <?= clean($a['author_name']) ?></span>
-        <span><?= date('d M Y', strtotime($a['created_at'])) ?></span>
+      <?php if (!empty($a['image_path'])): ?>
+        <img class="article-card-thumb" src="<?= UPLOAD_URL . clean($a['image_path']) ?>" alt="<?= clean($a['title']) ?>">
+      <?php else: ?>
+        <div class="article-card-thumb-placeholder">📝</div>
+      <?php endif; ?>
+      <div class="article-card-body">
+        <div class="article-card-cat"><?= clean($a['category']) ?></div>
+        <h2 class="article-card-title"><?= clean($a['title']) ?></h2>
+        <p class="article-card-excerpt"><?= clean(mb_strimwidth(strip_tags($a['content']), 0, 120, '...')) ?></p>
+        <div class="article-card-meta">
+          <span>✍️ <?= clean($a['author_name']) ?></span>
+          <span><?= date('d M Y', strtotime($a['created_at'])) ?></span>
+        </div>
       </div>
     </a>
   <?php endforeach; ?>
