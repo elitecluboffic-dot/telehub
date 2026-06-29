@@ -8,3 +8,5 @@ CREATE TABLE articles (
   status ENUM('pending','approved','rejected') DEFAULT 'pending',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE articles ADD COLUMN image_path VARCHAR(255) DEFAULT NULL;
