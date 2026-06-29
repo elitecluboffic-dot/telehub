@@ -15,7 +15,8 @@ require_once __DIR__ . '/../../includes/functions.php';
     <span class="brand-icon">⚙️</span> Admin Panel
   </a>
   <nav>
-    <a href="<?= SITE_URL ?>/admin/logout.php" class="btn btn-sm" style="background: linear-gradient(90deg, #ff0000, #ff7700, #ffff00, #00ff00, #0000ff, #8b00ff); color: white; border: none;">Logout</a>
+    <a href="<?= SITE_URL ?>/admin/articles.php">Artikel</a>
+    <a href="<?= SITE_URL ?>/admin/logout.php" class="btn btn-sm" style="background:linear-gradient(90deg,#ff0000,#ff7700,#ffff00,#00ff00,#0000ff,#8b00ff);color:white;border:none">Logout</a>
   </nav>
 </div>
 <div class="container">
