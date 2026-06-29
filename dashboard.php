@@ -41,6 +41,7 @@ include __DIR__ . '/includes/header.php';
   <div class="dash-card">
     <h3>Buat Custom Card Baru</h3>
     <form method="post" enctype="multipart/form-data">
+
       <div class="form-row">
         <div class="form-group">
           <label>Tipe</label>
@@ -84,7 +85,7 @@ include __DIR__ . '/includes/header.php';
 
       <div class="form-group">
         <label>Foto / Logo (jpg, png, webp, max 3MB)</label>
-        <input type="file" name="image" accept="image/*">
+        <input type="file" name="image" accept="image/*" style="color:var(--text);padding:10px 0;">
       </div>
 
       <div class="form-group">
@@ -92,14 +93,16 @@ include __DIR__ . '/includes/header.php';
         <div class="color-options">
           <?php foreach (['#2AABEE'=>'Biru','#8e44ad'=>'Ungu','#27ae60'=>'Hijau','#e67e22'=>'Oranye','#e35d6a'=>'Merah'] as $hex=>$nm): ?>
             <label>
-              <input type="radio" name="theme_color" value="<?= $hex ?>" style="display:none" <?= $hex=='#2AABEE'?'checked':'' ?> onclick="document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));this.parentElement.classList.add('active')">
-              <span class="color-dot" style="background:<?= $hex ?>" title="<?= $nm ?>" onclick="this.previousElementSibling.click()"></span>
+              <input type="radio" name="theme_color" value="<?= $hex ?>" style="display:none" <?= $hex=='#2AABEE'?'checked':'' ?>
+                onclick="document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));this.parentElement.querySelector('.color-dot').classList.add('active')">
+              <span class="color-dot <?= $hex=='#2AABEE'?'active':'' ?>" style="background:<?= $hex ?>" title="<?= $nm ?>"
+                onclick="this.previousElementSibling.click()"></span>
             </label>
           <?php endforeach; ?>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block">Kirim Card untuk Direview</button>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px">Submit Card</button>
     </form>
   </div>
 
@@ -108,17 +111,24 @@ include __DIR__ . '/includes/header.php';
     <?php if (empty($mySubmissions)): ?>
       <p style="color:var(--text-dim)">Kamu belum membuat card apapun.</p>
     <?php else: ?>
-      <table class="simple">
-        <tr><th>Nama</th><th>Tipe</th><th>Status</th><th>Dikirim</th></tr>
-        <?php foreach ($mySubmissions as $s): ?>
+      <div class="table-responsive">
+        <table class="simple">
           <tr>
-            <td><?= clean($s['name']) ?></td>
-            <td><?= clean($s['type']) ?></td>
-            <td><span class="status-pill status-<?= $s['status'] ?>"><?= clean($s['status']) ?></span></td>
-            <td><?= date('d M Y', strtotime($s['created_at'])) ?></td>
+            <th>Nama</th>
+            <th>Tipe</th>
+            <th>Status</th>
+            <th>Dikirim</th>
           </tr>
-        <?php endforeach; ?>
-      </table>
+          <?php foreach ($mySubmissions as $s): ?>
+            <tr>
+              <td><?= clean($s['name']) ?></td>
+              <td><?= clean($s['type']) ?></td>
+              <td><span class="status-pill status-<?= $s['status'] ?>"><?= clean($s['status']) ?></span></td>
+              <td><?= date('d M Y', strtotime($s['created_at'])) ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
     <?php endif; ?>
   </div>
 </div>
