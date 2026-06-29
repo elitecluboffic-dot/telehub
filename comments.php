@@ -1,5 +1,8 @@
 <?php
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/ipguard/IPGuard.php';
+(new IPGuard())->protect();
 $pageTitle = 'Komentar & Rating';
 $metaDesc = 'Berikan rating dan komentar kamu untuk TeleCard.';
 
