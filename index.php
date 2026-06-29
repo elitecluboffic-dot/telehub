@@ -1,14 +1,12 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'Beranda';
-
-// Ambil beberapa card approved terbaru untuk ditampilkan di homepage
+$metaDesc = 'TeleCard adalah direktori card custom untuk komunitas Telegram. Temukan dan daftarkan channel, grup, serta user Telegram kamu di sini.';
+$metaKeywords = 'telegram, channel telegram, grup telegram, direktori telegram, telecard, card telegram';
 $stmt = $pdo->query("SELECT * FROM card_submissions WHERE status='approved' ORDER BY created_at DESC LIMIT 6");
 $cards = $stmt->fetchAll();
-
 include __DIR__ . '/includes/header.php';
 ?>
-
 <div class="hero">
   <h1>Buat & Temukan <span>Custom Card</span><br>Channel, Grup & User Telegram</h1>
   <p>TeleCard adalah direktori card custom untuk komunitas Telegram kamu. Daftar, isi form, dan biarkan card kamu tampil di galeri publik</p>
@@ -21,24 +19,26 @@ include __DIR__ . '/includes/header.php';
     <button type="submit">Cari</button>
   </form>
 </div>
-
 <h2 style="margin-top:50px;">Card Terbaru</h2>
 <div class="card-grid">
   <?php if (empty($cards)): ?>
     <p style="color:var(--text-dim)">Belum ada card yang disetujui. Jadilah yang pertama!</p>
   <?php endif; ?>
   <?php foreach ($cards as $c): ?>
-    <div class="tcard">
+    <div class="tcard" style="border-top:3px solid <?= clean($c['theme_color'] ?? '#2AABEE') ?>">
       <div class="tcard-top">
         <?php if ($c['image_path']): ?>
           <img class="tcard-avatar" src="<?= UPLOAD_URL . clean($c['image_path']) ?>">
         <?php else: ?>
-          <div class="tcard-avatar"></div>
+          <div class="tcard-avatar" style="background:<?= clean($c['theme_color'] ?? '#2AABEE') ?>"></div>
         <?php endif; ?>
         <div>
           <div class="tcard-title">
             <?= clean($c['name']) ?>
             <span class="type-badge" style="background:<?= badgeColorByType($c['type']) ?>"><?= clean($c['type']) ?></span>
+            <?php if (!empty($c['is_verified'])): ?>
+              <span title="Verified" style="color:#1d9bf0;font-size:15px;font-weight:bold">✓</span>
+            <?php endif; ?>
           </div>
           <div class="tcard-meta"><?= $c['member_count'] ? clean($c['member_count']) . ' member' : '' ?></div>
         </div>
@@ -58,5 +58,4 @@ include __DIR__ . '/includes/header.php';
     </div>
   <?php endforeach; ?>
 </div>
-
 <?php include __DIR__ . '/includes/footer.php'; ?>
