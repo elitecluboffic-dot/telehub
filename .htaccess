@@ -5,6 +5,12 @@
 # Matikan directory listing
 Options -Indexes
 
+# ── Rewrite sitemap.xml ke sitemap.php ───────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+</IfModule>
+
 # ── Redirect www ke non-www ──────────────────────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -76,3 +82,5 @@ Options -Indexes
 # ── Custom error page ────────────────────────────────────────────
 ErrorDocument 403 /index.php
 ErrorDocument 404 /index.php
+
+Redirect 301 /news.html https://telehub.nfy.fyi/articles.php
