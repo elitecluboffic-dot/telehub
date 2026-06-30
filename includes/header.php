@@ -30,7 +30,7 @@ $user = isLoggedIn() ? currentUser() : null;
 <link rel="apple-touch-icon" href="<?= SITE_URL ?>/assets/img/telehub-57.png">
 <link rel="icon" type="image/png" href="<?= SITE_URL ?>/assets/img/telehub-70.png">
 <link rel="icon" type="image/png" href="<?= SITE_URL ?>/assets/img/telehub-72.png">
-<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
+<link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css?v=<?= time() ?>">
 </head>
 <body>
 
@@ -85,6 +85,11 @@ document.addEventListener('click', function(e) {
   const toggle = document.querySelector('.navbar-toggle');
   if (menu && toggle && !menu.contains(e.target) && !toggle.contains(e.target)) {
     menu.classList.remove('open');
+  }
+});
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 640) {
+    closeMobileMenu();
   }
 });
 
