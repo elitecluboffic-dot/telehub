@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/../../includes/functions.php';
+
+// Cek status login admin
+$isAdminLoggedIn = isAdminLoggedIn();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -10,11 +13,11 @@ require_once __DIR__ . '/../../includes/functions.php';
   <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
 </head>
 <body>
-
 <div class="navbar container">
   <a href="<?= SITE_URL ?>/admin/dashboard.php" class="brand">
     <span class="brand-icon">⚙️</span> Admin Panel
   </a>
+  <?php if ($isAdminLoggedIn): ?>
   <nav>
     <a href="<?= SITE_URL ?>/admin/dashboard.php">Dashboard</a>
     <a href="<?= SITE_URL ?>/admin/articles.php">Artikel</a>
@@ -25,14 +28,14 @@ require_once __DIR__ . '/../../includes/functions.php';
     <span></span>
     <span></span>
   </button>
+  <?php endif; ?>
 </div>
-
+<?php if ($isAdminLoggedIn): ?>
 <div class="navbar-mobile" id="adminMobileMenu">
   <a href="<?= SITE_URL ?>/admin/dashboard.php" onclick="closeAdminMenu()">📊 Dashboard</a>
   <a href="<?= SITE_URL ?>/admin/articles.php" onclick="closeAdminMenu()">📝 Artikel</a>
   <a href="<?= SITE_URL ?>/admin/logout.php">🚪 Logout</a>
 </div>
-
 <script>
 function toggleAdminMenu() {
   document.getElementById('adminMobileMenu').classList.toggle('open');
@@ -48,5 +51,5 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
-
+<?php endif; ?>
 <div class="container">
