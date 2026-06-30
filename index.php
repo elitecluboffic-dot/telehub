@@ -8,8 +8,32 @@ $metaDesc = 'TeleCard adalah direktori card custom untuk komunitas Telegram. Tem
 $metaKeywords = 'telegram, channel telegram, grup telegram, direktori telegram, telecard, card telegram';
 $stmt = $pdo->query("SELECT * FROM card_submissions WHERE status='approved' ORDER BY created_at DESC LIMIT 6");
 $cards = $stmt->fetchAll();
+
+// Daftar gambar carousel. Gambar pertama akan di-render langsung di HTML
+// (bukan lewat JS) supaya browser bisa mulai download-nya secepat mungkin
+// dan jadi kandidat LCP yang cepat, bukan yang telat 5-7 detik.
+$carouselImages = [
+    '/assets/img/file_00000000db68720696cf41b77e30301a.png',
+    '/assets/img/file_00000000d7d072098bcd55b4263611ad.jpg',
+    '/assets/img/file_00000000a54472099bba87b58b98d71b.png',
+    '/assets/img/file_000000009760720687063737da31c48c.png',
+    '/assets/img/file_000000006b2c7206bfef9cbfa1d57aab.jpg',
+    '/assets/img/file_0000000036b0720989c2eeb636b57cc3.jpg',
+    '/assets/img/Screenshot_20260630-205828.jpg',
+    '/assets/img/file_000000000d707209a333a3d428e4ff00.jpg',
+];
+$firstImage = $carouselImages[0];
+
 include __DIR__ . '/includes/header.php';
 ?>
+
+<!--
+  PENTING: pindahkan tag <link rel="preload"> di bawah ini ke dalam <head>
+  pada includes/header.php kalau bisa, supaya browser preload scanner
+  menemukannya lebih awal. Kalau header.php tidak gampang diedit,
+  taruh di sini juga sudah membantu dibanding sebelumnya (yang full lewat JS).
+-->
+<link rel="preload" as="image" href="<?= clean($firstImage) ?>" fetchpriority="high">
 
 <style>
   /* ── Background Carousel 3D ── */
@@ -43,6 +67,9 @@ include __DIR__ . '/includes/header.php';
     position: relative;
     transform-style: preserve-3d;
     animation: spinCarousel 18s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carousel-3d { animation: none; }
   }
   @keyframes spinCarousel {
     from { transform: rotateY(0deg); }
@@ -99,7 +126,7 @@ include __DIR__ . '/includes/header.php';
   #pageLoader.loader-hidden {
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.4s ease;
   }
   body.loading-active { overflow: hidden; }
 </style>
@@ -107,7 +134,22 @@ include __DIR__ . '/includes/header.php';
 <!-- Background Carousel 3D -->
 <div id="bgCarousel">
   <div class="scene">
-    <div class="carousel-3d" id="carousel3d"></div>
+    <div class="carousel-3d" id="carousel3d">
+      <!--
+        Slide pertama dirender langsung di HTML (server-side), bukan via JS,
+        supaya gambar ini bisa langsung di-discover & didownload oleh browser
+        sejak awal. Posisi rotateY(0deg) sama seperti index ke-0 di array JS.
+      -->
+      <div class="card-slide" style="transform: rotateY(0deg) translateZ(<?= (int) (round(220 / (2 * tan(M_PI / count($carouselImages)))) + 80) ?>px)">
+        <img
+          src="<?= clean($firstImage) ?>"
+          alt=""
+          fetchpriority="high"
+          loading="eager"
+          decoding="async"
+        >
+      </div>
+    </div>
   </div>
 </div>
 
@@ -119,39 +161,38 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <script>
-// ── Build carousel cards ──
+// Data gambar carousel (gambar index 0 sudah dirender langsung di HTML,
+// jadi di sini kita skip index 0 dan mulai dari 1).
+const CAROUSEL_IMAGES = <?= json_encode($carouselImages) ?>;
+
+// ── Build sisa carousel cards (lazy, tidak menghalangi LCP) ──
 (function () {
-  const images = [
-    '/assets/img/file_00000000d7d072098bcd55b4263611ad.png',
-    '/assets/img/file_0000000036b0720989c2eeb636b57cc3.png',
-    '/assets/img/file_000000000d707209a333a3d428e4ff00.png',
-    '/assets/img/file_000000006b2c7206bfef9cbfa1d57aab.png',
-    '/assets/img/file_000000009760720687063737da31c48c.png',
-    '/assets/img/file_00000000db68720696cf41b77e30301a.png',
-    '/assets/img/Screenshot_20260630-205828.jpg',
-    '/assets/img/file_00000000a54472099bba87b58b98d71b.png',
-  ];
+  const images = CAROUSEL_IMAGES;
   const count = images.length;
   const radius = Math.round(220 / (2 * Math.tan(Math.PI / count))) + 80;
   const container = document.getElementById('carousel3d');
-  images.forEach((src, i) => {
+
+  // Mulai dari index 1 karena index 0 sudah ada di markup HTML awal.
+  for (let i = 1; i < images.length; i++) {
     const slide = document.createElement('div');
     slide.className = 'card-slide';
     const angle = (360 / count) * i;
     slide.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
     const img = document.createElement('img');
-    img.src = src;
+    img.src = images[i];
     img.alt = '';
     img.loading = 'lazy';
+    img.decoding = 'async';
     slide.appendChild(img);
     container.appendChild(slide);
-  });
+  }
 })();
 
 // ── Loader ──
 document.body.classList.add('loading-active');
 
 (function () {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canvas = document.getElementById('particleCanvas');
   const ctx = canvas.getContext('2d');
 
@@ -162,7 +203,9 @@ document.body.classList.add('loading-active');
 
   const center = { x: size / 2, y: size / 2 };
   const sphereRadius = size * 0.30;
-  const PARTICLE_COUNT = window.innerWidth < 480 ? 420 : 700;
+  // Partikel dikurangi jauh (700 -> 220) supaya tidak rebutan main thread
+  // dengan rendering konten utama saat halaman baru dibuka.
+  const PARTICLE_COUNT = prefersReducedMotion ? 0 : (window.innerWidth < 480 ? 140 : 220);
 
   function rand(min, max) { return Math.random() * (max - min) + min; }
 
@@ -212,7 +255,12 @@ document.body.classList.add('loading-active');
   const percentEl = document.getElementById('loaderPercent');
   const dotsEl = document.getElementById('loaderDots');
   let dotState = 0;
-  const MIN_DURATION = 2800;
+
+  // Durasi minimum loader dipangkas drastis: dari 2800ms -> 600ms.
+  // Loader ini murni kosmetik dan dulu jadi penyebab utama LCP lambat
+  // karena memaksa browser menunggu sebelum konten asli "dianggap" tampil.
+  const MIN_DURATION = prefersReducedMotion ? 0 : 600;
+
   let pageReady = false;
   let timerDone = false;
   let displayPct = 0;
@@ -221,19 +269,17 @@ document.body.classList.add('loading-active');
 
   function getRealisticTarget() {
     const elapsed = Date.now() - startTime;
-    if (elapsed < 600)  return Math.min(35, elapsed / 600 * 35);
-    if (elapsed < 1400) return Math.min(65, 35 + (elapsed - 600) / 800 * 30);
-    if (elapsed < 2200) return Math.min(82, 65 + (elapsed - 1400) / 800 * 17);
-    if (elapsed < 2800) return Math.min(91, 82 + (elapsed - 2200) / 600 * 9);
+    if (elapsed < 200) return Math.min(50, elapsed / 200 * 50);
+    if (elapsed < 400) return Math.min(80, 50 + (elapsed - 200) / 200 * 30);
     if (pageReady) return 99;
-    return Math.min(94, 91 + (elapsed - 2800) / 2000 * 3);
+    return Math.min(95, 80 + (elapsed - 400) / 1000 * 15);
   }
 
   function animate() {
     ctx.clearRect(0, 0, size, size);
     targetPct = getRealisticTarget();
     if (displayPct < targetPct) {
-      displayPct += (targetPct - displayPct) * 0.04;
+      displayPct += (targetPct - displayPct) * 0.08;
       if (displayPct > targetPct) displayPct = targetPct;
     }
     const pct = Math.min(99, Math.floor(displayPct));
@@ -261,10 +307,10 @@ document.body.classList.add('loading-active');
       if (!loader) return;
       loader.classList.add('loader-hidden');
       document.body.classList.remove('loading-active');
-      cancelAnimationFrame(rafId);
+      if (rafId) cancelAnimationFrame(rafId);
       clearInterval(dotInterval);
-      setTimeout(() => { loader.style.display = 'none'; }, 650);
-    }, 350);
+      setTimeout(() => { loader.style.display = 'none'; }, 450);
+    }, 150);
   }
 
   setTimeout(() => { timerDone = true; tryHide(); }, MIN_DURATION);
@@ -276,7 +322,9 @@ document.body.classList.add('loading-active');
     window.addEventListener('load', onPageReady);
   }
 
-  setTimeout(hideLoader, 6000);
+  // Safety net: jangan biarkan loader nyangkut lebih dari 4 detik
+  // walau ada sesuatu yang gagal load.
+  setTimeout(hideLoader, 4000);
 })();
 </script>
 
@@ -303,7 +351,7 @@ document.body.classList.add('loading-active');
       <div class="tcard" style="border-top:3px solid <?= clean($c['theme_color'] ?? '#2AABEE') ?>">
         <div class="tcard-top">
           <?php if ($c['image_path']): ?>
-            <img class="tcard-avatar" src="<?= UPLOAD_URL . clean($c['image_path']) ?>">
+            <img class="tcard-avatar" src="<?= UPLOAD_URL . clean($c['image_path']) ?>" alt="<?= clean($c['name']) ?>" loading="lazy" decoding="async">
           <?php else: ?>
             <div class="tcard-avatar" style="background:<?= clean($c['theme_color'] ?? '#2AABEE') ?>"></div>
           <?php endif; ?>
