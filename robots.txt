@@ -1,0 +1,39 @@
+User-agent: *
+
+# Halaman publik — boleh diindex
+Allow: /
+Allow: /index.php
+Allow: /cards.php
+Allow: /articles.php
+Allow: /article.php
+Allow: /register.php
+
+# Folder sistem & sensitif — JANGAN diindex
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /ipguard/
+Disallow: /admin/includes/
+
+# File konfigurasi & backend, jaga-jaga kalau ada yang nyasar ke-crawl
+Disallow: /config.php
+Disallow: /login.php
+Disallow: /logout.php
+Disallow: /dashboard.php
+Disallow: /verify.php
+Disallow: /submission.php
+Disallow: /article-action.php
+
+# Folder uploads — boleh diindex gambar-gambarnya (bagus buat Google Images),
+# tapi block file .htaccess & file non-gambar yang mungkin nyasar di situ
+Allow: /uploads/*.jpg
+Allow: /uploads/*.jpeg
+Allow: /uploads/*.png
+Allow: /uploads/*.webp
+Disallow: /uploads/*.php
+Disallow: /uploads/.htaccess
+
+# Hindari index halaman hasil search/filter yang isinya duplikat
+Disallow: /*?q=
+Disallow: /*?category=
+
+Sitemap: https://telehub.nfy.fyi/sitemap.xml
