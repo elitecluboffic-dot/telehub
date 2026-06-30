@@ -1,7 +1,7 @@
 <?php
 
 /**
- * IPGuard - VPN/Proxy Blocker + IP & Country Tracker
+ * IPGuard - VPN/Proxy Blocker + IP & Country Tracker + Bot Allowlist
  * Pakai VPNAPI.io Detection API
  *
  * Cara pakai (di index.php, SETELAH require config.php):
@@ -18,12 +18,91 @@
  *   define('VPNAPI_BLOCK_PROXY',   true);
  *   define('VPNAPI_BLOCK_TOR',     true);
  *   define('VPNAPI_BLOCK_RELAY',   true);  // iCloud Private Relay, dsb
+ *
+ * STRATEGI BOT ALLOWLIST (2 lapis):
+ *   Lapis 1 — Bot ternama (Google, Bing, dst): diverifikasi KETAT pakai
+ *             reverse DNS + forward-confirm, supaya User-Agent palsu
+ *             ("saya Googlebot" padahal bukan) tetap ketahuan & ditolak.
+ *   Lapis 2 — Bot/crawler lain yang TIDAK dikenal namanya: tetap diizinkan
+ *             SELAMA User-Agent jelas menyatakan diri sebagai bot/crawler/
+ *             spider DAN hasil cek VPNAPI bersih (bukan vpn/proxy/tor).
+ *             Jadi bot kecil/legit (SEO tools, link-preview generator,
+ *             dsb) tetap bisa masuk, tapi kalau botnya jalan di atas VPN/
+ *             proxy/Tor (yang sering dipakai scraper jahat), tetap diblok.
  */
 
 class IPGuard
 {
     // Base endpoint VPNAPI.io
     private const API_BASE = 'https://vpnapi.io/api/';
+
+    // ──────────────────────────────────────────────
+    // BOT TERNAMA — diverifikasi ketat via reverse DNS
+    // key   = potongan string yang dicari di User-Agent (lowercase)
+    // value = daftar domain resmi yang valid buat reverse DNS match
+    // ──────────────────────────────────────────────
+    private const VERIFIED_BOTS = [
+        // ── Search engines ──
+        'googlebot'            => ['.googlebot.com', '.google.com'],
+        'google-inspectiontool' => ['.googlebot.com', '.google.com'],
+        'googleother'          => ['.googlebot.com', '.google.com'],
+        'storebot-google'      => ['.googlebot.com', '.google.com'],
+        'google-extended'      => ['.googlebot.com', '.google.com'],
+        'adsbot-google'        => ['.googlebot.com', '.google.com'],
+        'mediapartners-google' => ['.googlebot.com', '.google.com'],
+        'apis-google'          => ['.googlebot.com', '.google.com'],
+        'bingbot'              => ['.search.msn.com'],
+        'bingpreview'          => ['.search.msn.com'],
+        'msnbot'               => ['.search.msn.com'],
+        'slurp'                => ['.crawl.yahoo.net'],
+        'duckduckbot'          => ['.duckduckgo.com'],
+        'baiduspider'          => ['.baidu.com', '.baidu.jp'],
+        'yandexbot'            => ['.yandex.ru', '.yandex.com', '.yandex.net'],
+        'yandeximages'         => ['.yandex.ru', '.yandex.com', '.yandex.net'],
+        'sogou'                => ['.sogou.com'],
+        'exabot'               => ['.exabot.com'],
+        'naverbot'             => ['.naver.com', '.naver.jp'],
+        'seznambot'            => ['.seznam.cz'],
+        'coccocbot'            => ['.coccoc.com'],
+
+        // ── Social-media link preview / crawler ──
+        'facebookexternalhit'  => ['.fbsv.net', '.facebook.com'],
+        'facebookcatalog'      => ['.fbsv.net', '.facebook.com'],
+        'twitterbot'           => ['.twttr.com'],
+        'linkedinbot'          => ['.linkedin.com'],
+        'pinterest'            => ['.pinterest.com'],
+        'whatsapp'             => [], // tidak punya rDNS publik konsisten, izinkan via UA saja
+        'telegrambot'          => [], // sama seperti whatsapp
+        'discordbot'           => [], // sama seperti whatsapp
+        'slackbot'             => ['.slack.com'],
+        'redditbot'            => ['.reddit.com'],
+        'skypeuripreview'      => [],
+
+        // ── SEO / monitoring tools ──
+        'ahrefsbot'            => ['.ahrefs.com'],
+        'semrushbot'           => ['.semrush.com'],
+        'mj12bot'              => ['.majestic12.co.uk', '.mj12bot.com'],
+        'dotbot'               => ['.opensiteexplorer.org', '.moz.com'],
+        'screaming frog'       => [],
+        'uptimerobot'          => ['.uptimerobot.com'],
+        'pingdom'              => ['.pingdom.com'],
+
+        // ── Apple / others ──
+        'applebot'             => ['.applebot.apple.com'],
+        'ia_archiver'          => ['.archive.org'],     // Alexa/Wayback
+        'archive.org_bot'      => ['.archive.org'],
+    ];
+
+    // ──────────────────────────────────────────────
+    // GENERIC BOT PATTERN — buat lapis 2 (bot tak dikenal namanya)
+    // Kalau User-Agent mengandung salah satu kata ini, dianggap "klaim
+    // sebagai bot", lalu tetap dicek bersih/tidaknya via VPNAPI.
+    // ──────────────────────────────────────────────
+    private const GENERIC_BOT_PATTERNS = [
+        'bot', 'crawler', 'crawl', 'spider', 'slurp', 'fetcher',
+        'scraper', 'indexer', 'archiver', 'monitor', 'preview',
+        'validator', 'checker', 'scan',
+    ];
 
     public function __construct()
     {
@@ -43,7 +122,17 @@ class IPGuard
     // ──────────────────────────────────────────────
     public function protect(): void
     {
-        $ip   = $this->getVisitorIp();
+        $ip = $this->getVisitorIp();
+        $ua = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+
+        // ── Lapis 1: bot ternama, diverifikasi ketat via rDNS ──
+        if ($this->isKnownVerifiedBot($ip, $ua)) {
+            $this->logVisitor($ip, $this->emptySecurityData(), false, true, 'verified_known');
+            return;
+        }
+
+        // Untuk lapis 2, kita tetap butuh hasil cek VPNAPI dulu
+        // (supaya bot generic baru lolos kalau IP-nya beneran bersih)
         $data = $this->checkIp($ip);
 
         // Kalau API gagal/error, jangan block (fail-open)
@@ -57,6 +146,13 @@ class IPGuard
         $isProxy = !empty($security['proxy']);
         $isTor   = !empty($security['tor']);
         $isRelay = !empty($security['relay']);
+        $isClean = !$isVpn && !$isProxy && !$isTor && !$isRelay;
+
+        // ── Lapis 2: bot generik tak dikenal, lolos kalau IP-nya bersih ──
+        if ($isClean && $this->looksLikeGenericBot($ua)) {
+            $this->logVisitor($ip, $data, false, true, 'generic_clean');
+            return;
+        }
 
         $shouldBlock = (
             ($isVpn   && (defined('VPNAPI_BLOCK_VPN')   ? VPNAPI_BLOCK_VPN   : true)) ||
@@ -67,13 +163,80 @@ class IPGuard
 
         $isAnyBad = $isVpn || $isProxy || $isTor || $isRelay;
 
-        // Log semua pengunjung
-        $this->logVisitor($ip, $data, $isAnyBad);
+        // Log semua pengunjung (manusia maupun bot generic yang ke-block)
+        $this->logVisitor($ip, $data, $isAnyBad, false, null);
 
         if ($shouldBlock) {
             http_response_code(403);
             exit(VPNAPI_BLOCK_MESSAGE);
         }
+    }
+
+    // ──────────────────────────────────────────────
+    // LAPIS 1 — cek bot ternama + verifikasi reverse DNS
+    // ──────────────────────────────────────────────
+    private function isKnownVerifiedBot(string $ip, string $ua): bool
+    {
+        if ($ua === '') {
+            return false;
+        }
+
+        foreach (self::VERIFIED_BOTS as $botName => $validDomains) {
+            if (strpos($ua, $botName) === false) {
+                continue;
+            }
+
+            // Bot tanpa rDNS resmi publik (WhatsApp, Telegram, Discord, dst)
+            // → cukup percaya User-Agent, risiko rendah karena cuma dipakai
+            //   untuk link-preview, bukan akses data sensitif.
+            if (empty($validDomains)) {
+                return true;
+            }
+
+            $host = @gethostbyaddr($ip);
+            if ($host === false || $host === $ip) {
+                continue; // rDNS gagal → jangan auto-percaya, lanjut cek normal
+            }
+            $host = strtolower($host);
+
+            foreach ($validDomains as $domain) {
+                if (str_ends_with($host, $domain)) {
+                    // Forward-confirm: domain hasil rDNS harus resolve balik ke IP yang sama
+                    $forward = @gethostbynamel($host);
+                    if (is_array($forward) && in_array($ip, $forward, true)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // ──────────────────────────────────────────────
+    // LAPIS 2 — cek apakah UA "mengklaim" diri sebagai bot
+    // (dipakai HANYA setelah IP terbukti bersih dari VPN/proxy/Tor)
+    // ──────────────────────────────────────────────
+    private function looksLikeGenericBot(string $ua): bool
+    {
+        if ($ua === '') {
+            return false;
+        }
+        foreach (self::GENERIC_BOT_PATTERNS as $pattern) {
+            if (strpos($ua, $pattern) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function emptySecurityData(): array
+    {
+        return [
+            'security' => ['vpn' => false, 'proxy' => false, 'tor' => false, 'relay' => false],
+            'location' => [],
+            'network'  => [],
+        ];
     }
 
     // ──────────────────────────────────────────────
@@ -162,7 +325,7 @@ class IPGuard
     //   "network": { "autonomous_system_organization": "PT Telkom", ... }
     // }
     // ──────────────────────────────────────────────
-    private function logVisitor(string $ip, array $data, bool $isBad): void
+    private function logVisitor(string $ip, array $data, bool $isBad, bool $isBot = false, ?string $botType = null): void
     {
         $logFile  = VPNAPI_LOG_FILE;
         $location = $data['location'] ?? [];
@@ -181,6 +344,9 @@ class IPGuard
             'tor'         => !empty($security['tor']),
             'relay'       => !empty($security['relay']),
             'blocked'     => $isBad,
+            'bot'         => $isBot,
+            'bot_type'    => $botType, // 'verified_known' | 'generic_clean' | null
+            'user_agent'  => $_SERVER['HTTP_USER_AGENT'] ?? '',
         ];
 
         $logs = [];
@@ -248,6 +414,14 @@ class IPGuard
     }
 
     // ──────────────────────────────────────────────
+    // HELPER — ambil log bot saja
+    // ──────────────────────────────────────────────
+    public function getBotLogs(): array
+    {
+        return array_values(array_filter($this->getLogs(), fn($e) => !empty($e['bot'])));
+    }
+
+    // ──────────────────────────────────────────────
     // HELPER — statistik singkat
     // ──────────────────────────────────────────────
     public function getStats(): array
@@ -255,6 +429,7 @@ class IPGuard
         $logs    = $this->getLogs();
         $total   = count($logs);
         $blocked = count(array_filter($logs, fn($e) => !empty($e['blocked'])));
+        $bots    = count(array_filter($logs, fn($e) => !empty($e['bot'])));
 
         $countries = [];
         foreach ($logs as $e) {
@@ -267,6 +442,7 @@ class IPGuard
             'total'     => $total,
             'blocked'   => $blocked,
             'allowed'   => $total - $blocked,
+            'bots'      => $bots,
             'countries' => $countries,
         ];
     }
