@@ -389,6 +389,170 @@ footer { text-align: center; padding: 30px 0; color: var(--text-dim); font-size:
 }
 .comment-pagination .page-info { color: var(--text-dim); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
 .comment-pagination .btn.disabled { opacity: 0.4; pointer-events: none; cursor: default; }
+/* ===== LAMP LOGIN ANIMATION ===== */
+.lamp-login-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 0 70px;
+  position: relative;
+}
+
+.lamp-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lamp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+}
+
+/* cahaya lampu (kerucut sinar) */
+.lamp-glow {
+  position: absolute;
+  top: 46px;
+  width: 0;
+  height: 0;
+  border-left: 60px solid transparent;
+  border-right: 60px solid transparent;
+  border-top: 160px solid rgba(42,171,238,0);
+  transition: border-top-color 0.5s ease, filter 0.5s ease;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* kap lampu */
+.lamp-shade {
+  width: 90px;
+  height: 64px;
+  background: #3a4150;
+  border-radius: 50% 50% 14px 14px / 60% 60% 14px 14px;
+  clip-path: polygon(22% 0%, 78% 0%, 100% 100%, 0% 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.lamp-face { display: flex; gap: 14px; position: relative; }
+.lamp-eye {
+  width: 5px; height: 8px; background: #1c2129; border-radius: 50%;
+  transition: background 0.5s ease;
+}
+.lamp-mouth {
+  position: absolute;
+  bottom: -10px; left: 50%; transform: translateX(-50%);
+  width: 14px; height: 7px;
+  border-bottom: 2px solid #1c2129;
+  border-radius: 0 0 10px 10px;
+  transition: border-color 0.5s ease;
+}
+
+.lamp-pull {
+  width: 2px;
+  height: 18px;
+  background: #555;
+  margin-top: 0;
+}
+
+.lamp-stand {
+  width: 5px;
+  height: 70px;
+  background: linear-gradient(180deg, #555, #777);
+  border-radius: 3px;
+}
+
+.lamp-base {
+  width: 56px;
+  height: 12px;
+  background: linear-gradient(180deg, #777, #444);
+  border-radius: 50%;
+}
+
+.lamp-hint {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  margin: 14px 0 0;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+/* form login tersembunyi sampai lampu dinyalakan */
+.lamp-form {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-12px) scale(0.96);
+  overflow: hidden;
+  margin: 0 auto;
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.6s ease, margin 0.5s ease;
+}
+
+/* ===== STATE: LAMPU NYALA ===== */
+.lamp-checkbox:checked ~ .lamp .lamp-shade {
+  background: #f5d76e;
+  box-shadow: 0 0 24px 6px rgba(245,215,110,0.55);
+}
+.lamp-checkbox:checked ~ .lamp .lamp-eye { background: #4a3a10; }
+.lamp-checkbox:checked ~ .lamp .lamp-mouth { border-color: #4a3a10; }
+.lamp-checkbox:checked ~ .lamp .lamp-glow {
+  border-top-color: rgba(245,215,110,0.35);
+  filter: blur(6px);
+}
+.lamp-checkbox:checked ~ .lamp-hint { opacity: 0; }
+.lamp-checkbox:checked ~ .lamp-form {
+  max-height: 600px;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  margin: 36px auto 0;
+}
+
+/* tambahan glow di sekitar form saat lampu nyala */
+.lamp-checkbox:checked ~ .lamp-form.auth-wrap {
+  box-shadow: 0 0 40px rgba(245,215,110,0.18), 0 0 0 1px rgba(245,215,110,0.25);
+  border-color: rgba(245,215,110,0.3);
+  transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.6s ease,
+              margin 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;
+}
+
+/* form login khusus halaman lamp-login dibikin lebih besar */
+.lamp-form.auth-wrap {
+  max-width: 460px;
+  padding: 44px 40px;
+}
+.lamp-form.auth-wrap h2 { font-size: 28px; }
+.lamp-form.auth-wrap p.sub { font-size: 15px; margin-bottom: 10px; }
+.lamp-form .form-group { margin-bottom: 20px; }
+.lamp-form .form-group label { font-size: 14.5px; }
+.lamp-form .form-group input { padding: 13px 16px; font-size: 15.5px; }
+.lamp-form .btn-block { padding: 13px 20px; font-size: 15.5px; }
+.lamp-form .auth-foot { font-size: 14.5px; margin-top: 20px; }
+
+@media (max-width: 640px) {
+  .lamp-form.auth-wrap { max-width: 100%; padding: 28px 20px; }
+  .lamp-form.auth-wrap h2 { font-size: 24px; }
+}
+
+.lamp:hover .lamp-shade {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 640px) {
+  .lamp-login-wrap { padding: 30px 0 50px; }
+  .lamp-shade { width: 76px; height: 54px; }
+  .lamp-stand { height: 56px; }
+}
 
 /* ===== RESPONSIVE MOBILE ===== */
 @media (max-width: 768px) {
@@ -405,8 +569,9 @@ footer { text-align: center; padding: 30px 0; color: var(--text-dim); font-size:
   /* NAVBAR */
   .navbar { padding: 14px 0; }
   .navbar .brand { font-size: 16px; }
-  .navbar nav { display: none; }
-  .navbar-toggle { display: flex; }
+  .navbar nav { display: none !important; }
+  nav#navDesktop { display: none !important; }
+  .navbar-toggle { display: flex !important; }
 
   /* HERO */
   .hero { padding: 36px 0 24px; }
@@ -470,4 +635,11 @@ footer { text-align: center; padding: 30px 0; color: var(--text-dim); font-size:
 
   /* FOOTER */
   footer { padding: 20px 0; font-size: 12px; }
+  footer .container { padding: 0 20px; }
+
+  /* DASHBOARD FORM EXTRA */
+  .color-options { gap: 14px; }
+  .color-dot { width: 34px; height: 34px; }
+  .form-group select { padding: 13px 14px; font-size: 16px; }
+  .form-group input[type="file"] { font-size: 13px; }
 }
