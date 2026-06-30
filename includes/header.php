@@ -39,7 +39,7 @@ $user = isLoggedIn() ? currentUser() : null;
     <img src="<?= SITE_URL ?>/assets/img/telehub-16.png" alt="<?= SITE_NAME ?>" style="height:32px;vertical-align:middle;margin-right:6px">
     <?= SITE_NAME ?>
   </a>
-  <nav>
+  <nav id="navDesktop">
     <a href="<?= SITE_URL ?>/index.php">Beranda</a>
     <a href="<?= SITE_URL ?>/cards.php">Jelajahi Card</a>
     <a href="<?= SITE_URL ?>/articles.php">News</a>
@@ -50,6 +50,7 @@ $user = isLoggedIn() ? currentUser() : null;
       <a href="<?= SITE_URL ?>/login.php" class="btn btn-outline btn-sm">Login</a>
       <a href="<?= SITE_URL ?>/register.php" class="btn btn-primary btn-sm">Daftar</a>
     <?php endif; ?>
+    <div class="nav-indicator" id="navIndicator"></div>
   </nav>
   <button class="navbar-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
     <span></span>
@@ -86,6 +87,40 @@ document.addEventListener('click', function(e) {
     menu.classList.remove('open');
   }
 });
+
+// Navbar desktop pill indicator
+(function() {
+  const nav = document.getElementById('navDesktop');
+  const indicator = document.getElementById('navIndicator');
+  if (!nav || !indicator) return;
+
+  const links = Array.from(nav.querySelectorAll('a:not(.btn)'));
+
+  function moveIndicator(el) {
+    if (!el) { indicator.style.opacity = 0; return; }
+    indicator.style.opacity = 1;
+    indicator.style.left = el.offsetLeft + 'px';
+    indicator.style.width = el.offsetWidth + 'px';
+  }
+
+  const currentPath = window.location.pathname.split('/').pop() || 'index.php';
+  let activeLink = null;
+  links.forEach(link => {
+    const linkPath = link.getAttribute('href').split('/').pop();
+    if (linkPath === currentPath) {
+      link.classList.add('active');
+      activeLink = link;
+    }
+  });
+
+  moveIndicator(activeLink);
+
+  links.forEach(link => {
+    link.addEventListener('mouseenter', () => moveIndicator(link));
+  });
+
+  nav.addEventListener('mouseleave', () => moveIndicator(activeLink));
+})();
 </script>
 
 <div class="container">
