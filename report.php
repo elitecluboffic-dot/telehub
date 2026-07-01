@@ -20,6 +20,15 @@ if (time() - $_SESSION['report_window'] > 600) {
     $_SESSION['report_window'] = time();
 }
 
+// ── Konfigurasi upload gambar ──
+const REPORT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const REPORT_ALLOWED_MIME  = [
+    'image/jpeg' => 'jpg',
+    'image/png'  => 'png',
+    'image/webp' => 'webp',
+    'image/gif'  => 'gif',
+];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Validasi CSRF token ──
@@ -39,8 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email       = trim($_POST['email']       ?? '');
         $url_terkait = trim($_POST['url_terkait'] ?? '');
 
-        // ── Validasi input ──
+        // ── Validasi input teks ──
         $jenisValid = ['bug', 'konten', 'akun', 'performa', 'saran', 'lainnya'];
+        $imagePath  = null; // path file sementara (tmp) kalau valid
+        $imageMime  = null;
+
         if (!in_array($jenis, $jenisValid, true)) {
             $error = 'Jenis laporan tidak valid.';
         } elseif (mb_strlen($judul) < 5 || mb_strlen($judul) > 120) {
@@ -49,7 +61,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Deskripsi harus antara 20–2000 karakter.';
         } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Format email tidak valid.';
-        } else {
+        }
+        // ── Validasi file gambar (opsional) ──
+        elseif (!empty($_FILES['gambar']) && $_FILES['gambar']['error'] !== UPLOAD_ERR_NO_FILE) {
+
+            $file = $_FILES['gambar'];
+
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                $error = 'Gagal mengunggah gambar. Silakan coba lagi.';
+            } elseif ($file['size'] > REPORT_MAX_FILE_SIZE) {
+                $error = 'Ukuran gambar maksimal 5MB.';
+            } else {
+                // ── Cek MIME asli file (bukan cuma ekstensi) ──
+                $finfo    = finfo_open(FILEINFO_MIME_TYPE);
+                $realMime = finfo_file($finfo, $file['tmp_name']);
+                finfo_close($finfo);
+
+                if (!isset(REPORT_ALLOWED_MIME[$realMime])) {
+                    $error = 'Format gambar tidak didukung. Gunakan JPG, PNG, WEBP, atau GIF.';
+                } else {
+                    $imagePath = $file['tmp_name'];
+                    $imageMime = $realMime;
+                }
+            }
+        }
+
+        if (!$error) {
             // ── Bangun pesan Telegram ──
             $jenisLabel = [
                 'bug'       => '🐛 Bug / Error',
@@ -78,14 +115,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg .= "🌐 *IP:* `{$ip}`\n";
             $msg .= "🕐 *Waktu:* {$waktu}\n";
             $msg .= "📱 *UA:* `{$ua}`";
+            if ($imagePath) $msg .= "\n🖼 *Lampiran:* Ada gambar terlampir";
 
             // ── Kirim lewat backend Railway (relay ke Telegram) ──
-            $sent = sendViaRailway($msg);
+            $sent = sendViaRailway($msg, $imagePath, $imageMime);
 
             if ($sent) {
                 $success = true;
                 $_SESSION['report_count']++;
-                // Hapus CSRF token lama biar ga bisa resubmit
                 unset($_SESSION['csrf_report']);
             } else {
                 $error = 'Gagal mengirim laporan. Silakan coba lagi dalam beberapa saat.';
@@ -100,29 +137,52 @@ if (empty($_SESSION['csrf_report'])) {
 }
 $csrfToken = $_SESSION['csrf_report'];
 
-// ── Fungsi kirim pesan lewat backend Railway ──
-function sendViaRailway(string $text): bool
+// ── Fungsi kirim pesan (+ gambar opsional) lewat backend Railway ──
+function sendViaRailway(string $text, ?string $imagePath = null, ?string $imageMime = null): bool
 {
     $backendUrl = 'https://telehub-support-production.up.railway.app/report';
 
-    $payload = json_encode([
-        'message' => $text,
-    ]);
-
     $ch = curl_init($backendUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => [
-            'Content-Type: application/json',
-            // Backend hanya menerima request dengan Origin ini
-            'Origin: https://telehub.nfy.fyi',
-        ],
-        CURLOPT_TIMEOUT        => 8,
-        CURLOPT_CONNECTTIMEOUT => 4,
-        CURLOPT_SSL_VERIFYPEER => true,
-    ]);
+
+    if ($imagePath) {
+        // ── Ada gambar: kirim sebagai multipart/form-data ──
+        $ext = REPORT_ALLOWED_MIME[$imageMime] ?? 'jpg';
+        $cfile = new CURLFile($imagePath, $imageMime, 'report.' . $ext);
+
+        $payload = [
+            'message' => $text,
+            'photo'   => $cfile,
+        ];
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload, // array -> curl otomatis pakai multipart
+            CURLOPT_HTTPHEADER     => [
+                // Jangan set Content-Type manual, biar curl yang set boundary multipart-nya
+                'Origin: https://telehub.nfy.fyi',
+            ],
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+    } else {
+        // ── Tanpa gambar: tetap kirim JSON seperti semula ──
+        $payload = json_encode(['message' => $text]);
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Origin: https://telehub.nfy.fyi',
+            ],
+            CURLOPT_TIMEOUT        => 8,
+            CURLOPT_CONNECTTIMEOUT => 4,
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+    }
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -350,6 +410,7 @@ include __DIR__ . '/includes/header.php';
   .btn-report:active { transform: translateY(0); }
 
   .btn-report svg { width: 18px; height: 18px; }
+  .btn-report[disabled] { opacity: 0.7; cursor: not-allowed; transform: none !important; }
 
   /* Divider */
   .form-divider {
@@ -368,6 +429,92 @@ include __DIR__ . '/includes/header.php';
     margin-left: 8px;
     vertical-align: middle;
   }
+
+  /* Upload Gambar */
+  .upload-box {
+    position: relative;
+    border: 1.5px dashed rgba(255,255,255,0.16);
+    border-radius: 14px;
+    padding: 22px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .upload-box:hover,
+  .upload-box.dragover {
+    border-color: var(--tg-blue);
+    background: rgba(42,171,238,0.05);
+  }
+
+  .upload-box input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-box .upload-icon {
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+
+  .upload-box .upload-text {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .upload-box .upload-text strong {
+    color: var(--tg-blue);
+  }
+
+  .upload-preview {
+    display: none;
+    position: relative;
+    margin-top: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .upload-preview.show { display: block; }
+
+  .upload-preview img {
+    display: block;
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+  }
+
+  .upload-preview .remove-img {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.65);
+    border: none;
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .upload-preview .remove-img:hover { background: rgba(220,38,38,0.85); }
+
+  .upload-error {
+    color: #fca5a5;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .upload-error.show { display: block; }
 </style>
 
 <div class="report-wrap">
@@ -397,7 +544,7 @@ include __DIR__ . '/includes/header.php';
 
   <?php if (!$success): ?>
   <div class="report-card">
-    <form method="POST" action="report.php" autocomplete="off">
+    <form method="POST" action="report.php" autocomplete="off" enctype="multipart/form-data" id="reportForm">
       <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfToken) ?>">
 
       <!-- Jenis Laporan -->
@@ -472,6 +619,25 @@ include __DIR__ . '/includes/header.php';
         <div class="hint">20–2000 karakter</div>
       </div>
 
+      <!-- Upload Gambar (opsional) -->
+      <div class="form-group">
+        <label for="gambar">
+          Lampirkan Gambar
+          <span class="optional-badge">Opsional</span>
+        </label>
+        <div class="upload-box" id="uploadBox">
+          <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png,image/webp,image/gif">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-text"><strong>Klik untuk pilih gambar</strong> atau drag & drop</div>
+        </div>
+        <div class="hint">JPG, PNG, WEBP, atau GIF. Maksimal 5MB.</div>
+        <div class="upload-error" id="uploadError"></div>
+        <div class="upload-preview" id="uploadPreview">
+          <img id="uploadPreviewImg" src="" alt="Preview gambar">
+          <button type="button" class="remove-img" id="removeImgBtn">✕</button>
+        </div>
+      </div>
+
       <div class="form-divider"></div>
 
       <!-- URL Terkait (opsional) -->
@@ -499,17 +665,109 @@ include __DIR__ . '/includes/header.php';
       </div>
 
       <!-- Submit -->
-      <button type="submit" class="btn-report">
+      <button type="submit" class="btn-report" id="reportSubmitBtn">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
         </svg>
-        Kirim Laporan
+        <span id="reportSubmitText">Kirim Laporan</span>
       </button>
     </form>
   </div>
   <?php endif; ?>
 
 </div>
+
+<script>
+(function () {
+    var input      = document.getElementById('gambar');
+    var box        = document.getElementById('uploadBox');
+    var preview    = document.getElementById('uploadPreview');
+    var previewImg = document.getElementById('uploadPreviewImg');
+    var removeBtn  = document.getElementById('removeImgBtn');
+    var errorEl    = document.getElementById('uploadError');
+    var form       = document.getElementById('reportForm');
+    var submitBtn  = document.getElementById('reportSubmitBtn');
+    var submitText = document.getElementById('reportSubmitText');
+
+    var MAX_SIZE = 5 * 1024 * 1024;
+    var ALLOWED  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+    if (!input) return;
+
+    function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.add('show');
+    }
+    function clearError() {
+        errorEl.textContent = '';
+        errorEl.classList.remove('show');
+    }
+    function showPreview(file) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            previewImg.src = e.target.result;
+            preview.classList.add('show');
+            box.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+    function resetUpload() {
+        input.value = '';
+        preview.classList.remove('show');
+        previewImg.src = '';
+        box.style.display = '';
+        clearError();
+    }
+
+    function handleFile(file) {
+        clearError();
+        if (!file) return;
+        if (ALLOWED.indexOf(file.type) === -1) {
+            showError('Format tidak didukung. Gunakan JPG, PNG, WEBP, atau GIF.');
+            input.value = '';
+            return;
+        }
+        if (file.size > MAX_SIZE) {
+            showError('Ukuran gambar maksimal 5MB.');
+            input.value = '';
+            return;
+        }
+        showPreview(file);
+    }
+
+    input.addEventListener('change', function () {
+        handleFile(this.files[0]);
+    });
+
+    removeBtn.addEventListener('click', resetUpload);
+
+    // Drag & drop
+    ['dragover', 'dragenter'].forEach(function (evt) {
+        box.addEventListener(evt, function (e) {
+            e.preventDefault();
+            box.classList.add('dragover');
+        });
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+        box.addEventListener(evt, function (e) {
+            e.preventDefault();
+            box.classList.remove('dragover');
+        });
+    });
+    box.addEventListener('drop', function (e) {
+        var file = e.dataTransfer.files[0];
+        if (file) {
+            input.files = e.dataTransfer.files;
+            handleFile(file);
+        }
+    });
+
+    form.addEventListener('submit', function () {
+        submitBtn.setAttribute('disabled', 'disabled');
+        submitText.textContent = 'Mengirim...';
+    });
+})();
+</script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
