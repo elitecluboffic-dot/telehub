@@ -15,6 +15,10 @@ define('DB_PASS', 'Labibganteng11');
 define('GMAIL_EMAIL', 'elitecluboffic@gmail.com');
 define('GMAIL_APP_PASSWORD', 'qdreohfwjdioffsk');
 
+// --- Recaptcha V2 telehub.nfy.fyi ---
+define('RECAPTCHA_SITE_KEY', '6LdMLz8tAAAAAFtQYHcq_B_IqW0e77pZkHbODVaR');
+define('RECAPTCHA_SECRET_KEY', '6LdMLz8tAAAAABEemO48e9W_Mxtc5oe-Gc5iLFMa');
+
 // --- Umum ---
 define('SITE_NAME', 'TeleCard');
 define('SITE_URL', 'https://telehub.nfy.fyi');
@@ -24,7 +28,7 @@ define('UPLOAD_URL', SITE_URL . '/uploads/');
 // ============================
 // IPGUARD - VPN/PROXY BLOCKER
 // ============================
-define('VPNAPI_API_KEY',      '2ee89e0956cc4522aff54aa8ce59d692');
+define('VPNAPI_API_KEY',      '3ca112f65f4f43d8ae8836afa8c85906');
 define('VPNAPI_LOG_FILE',     __DIR__ . '/ipguard/visitor_log.json');
 define('VPNAPI_BLOCK_VPN',   true);
 define('VPNAPI_BLOCK_PROXY', true);
