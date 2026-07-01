@@ -515,6 +515,54 @@ include __DIR__ . '/includes/header.php';
   }
 
   .upload-error.show { display: block; }
+
+  /* Tombol aksi di halaman sukses */
+  .success-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .success-actions a {
+    flex: 1;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.22s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .success-actions .btn-home {
+    background: linear-gradient(135deg, var(--tg-blue) 0%, #1a7fd4 100%);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(42,171,238,0.3);
+  }
+
+  .success-actions .btn-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(42,171,238,0.45);
+  }
+
+  .success-actions .btn-again {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    border: 1.5px solid rgba(255,255,255,0.12);
+  }
+
+  .success-actions .btn-again:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  @media (max-width: 420px) {
+    .success-actions { flex-direction: column; }
+  }
 </style>
 
 <div class="report-wrap">
@@ -532,6 +580,21 @@ include __DIR__ . '/includes/header.php';
         <strong>Laporan berhasil dikirim!</strong><br>
         Terima kasih sudah melaporkan. Tim TeleCard akan menindaklanjuti laporan kamu secepatnya.
       </div>
+    </div>
+
+    <div class="success-actions">
+      <a href="index.php" class="btn-home">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Kembali ke Beranda
+      </a>
+      <a href="report.php" class="btn-again">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Kirim Laporan Lain
+      </a>
     </div>
   <?php endif; ?>
 
