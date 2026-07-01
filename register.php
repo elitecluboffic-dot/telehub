@@ -8,6 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = clean($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['confirm_password'] ?? '';
+    $terms    = $_POST['terms'] ?? '';
+    $captchaResponse = $_POST['g-recaptcha-response'] ?? '';
 
     if (!$username || !$email || !$password) {
         flash('error', 'Semua field wajib diisi.');
@@ -17,6 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('error', 'Konfirmasi password tidak cocok.');
     } elseif (strlen($password) < 6) {
         flash('error', 'Password minimal 6 karakter.');
+    } elseif (empty($terms)) {
+        flash('error', 'Kamu harus menyetujui Syarat & Ketentuan dan Kebijakan Privasi.');
+    } elseif (empty($captchaResponse) || !verifyRecaptcha($captchaResponse)) {
+        flash('error', 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.');
     } else {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
         $stmt->execute([$email, $username]);
@@ -38,6 +44,30 @@ include __DIR__ . '/includes/header.php';
 
 $flashError   = flash('error');
 $flashSuccess = flash('success');
+
+// ── Verifikasi reCAPTCHA ke Google ──
+function verifyRecaptcha(string $response): bool
+{
+    $ch = curl_init('https://www.google.com/recaptcha/api/siteverify');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => http_build_query([
+            'secret'   => RECAPTCHA_SECRET_KEY,
+            'response' => $response,
+            'remoteip' => $_SERVER['REMOTE_ADDR'] ?? '',
+        ]),
+        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_CONNECTTIMEOUT => 4,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ]);
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    if (!$result) return false;
+    $json = json_decode($result, true);
+    return !empty($json['success']);
+}
 ?>
 <style>
 *, *::before, *::after { box-sizing: border-box; }
@@ -318,6 +348,35 @@ $flashSuccess = flash('success');
 .fp-pwmeter.l3 i:nth-child(-n+3) { background:#ff8c2a; box-shadow:0 0 6px -1px #ff8c2a; }
 .fp-pwmeter.l4 i                 { background:#6fe0a0; box-shadow:0 0 6px -1px #6fe0a0; }
 
+/* Terms checkbox */
+.fp-terms {
+    position: relative; z-index: 2;
+    display: flex; align-items: flex-start; gap: 8px;
+    text-align: left; margin: 12px 0 4px;
+}
+.fp-terms input[type="checkbox"] {
+    margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0;
+    accent-color: #ff8c2a; cursor: pointer;
+}
+.fp-terms label {
+    font-size: 0.7rem; color: #b3a3ad; line-height: 1.5; cursor: pointer;
+}
+.fp-terms a { color: #ff8c2a; font-weight: 600; text-decoration: none; }
+.fp-terms a:hover { text-decoration: underline; }
+.fp-terms.is-invalid label { color: #ff8a7a; }
+
+/* reCAPTCHA wrap */
+.fp-captcha-wrap {
+    position: relative; z-index: 2;
+    display: flex; justify-content: center;
+    margin: 12px 0 4px;
+    transform: scale(0.92);
+    transform-origin: center;
+}
+@media (max-width: 340px) {
+    .fp-captcha-wrap { transform: scale(0.8); }
+}
+
 /* Button */
 .fp-btn {
     position: relative; z-index: 2;
@@ -576,6 +635,18 @@ $flashSuccess = flash('success');
         <small class="fp-hint" id="fpConfirmHint">Harus sama dengan password di atas</small>
       </div>
 
+      <div class="fp-terms" id="fpTermsWrap">
+        <input type="checkbox" name="terms" id="fpTerms" required>
+        <label for="fpTerms">
+          Saya menyetujui <a href="terms.php" target="_blank" rel="noopener">Syarat &amp; Ketentuan</a>
+          dan <a href="privacy.php" target="_blank" rel="noopener">Kebijakan Privasi</a> TeleCard.
+        </label>
+      </div>
+
+      <div class="fp-captcha-wrap">
+        <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars(RECAPTCHA_SITE_KEY) ?>"></div>
+      </div>
+
       <button type="submit" class="fp-btn" id="fpBtn">
         <span class="fp-spinner"></span>
         <span class="fp-btn-text">Daftar</span>
@@ -586,12 +657,14 @@ $flashSuccess = flash('success');
   </div>
 </div>
 
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
 (function () {
     var uName  = document.getElementById('fpUsername');
     var uEmail = document.getElementById('fpEmail');
     var uPass  = document.getElementById('fpPassword');
     var uConf  = document.getElementById('fpConfirm');
+    var uTerms = document.getElementById('fpTerms');
     var char   = document.getElementById('fpChar');
     var walker = document.getElementById('fpWalker');
     var stage  = document.getElementById('fpStage');
@@ -602,6 +675,7 @@ $flashSuccess = flash('success');
     var btn    = document.getElementById('fpBtn');
     var pwMeter= document.getElementById('fpPwMeter');
     var pwHint = document.getElementById('fpPasswordHint');
+    var termsWrap = document.getElementById('fpTermsWrap');
 
     var basePupil = { l: 82, r: 118 };
     var baseCy = 76, maxShift = 3.8;
@@ -802,12 +876,29 @@ $flashSuccess = flash('success');
     bindField(uPass, validatePassword);
     bindField(uConf, validateConfirm);
 
+    uTerms.addEventListener('change', function() {
+        termsWrap.classList.toggle('is-invalid', !this.checked);
+    });
+
     form.addEventListener('submit', function(e) {
         validateUsername(); validateEmail(); validatePassword(); validateConfirm();
-        if (!allValid()) {
+
+        var termsOk = uTerms.checked;
+        termsWrap.classList.toggle('is-invalid', !termsOk);
+
+        var captchaOk = true;
+        if (typeof grecaptcha !== 'undefined') {
+            captchaOk = grecaptcha.getResponse().length > 0;
+        }
+
+        if (!allValid() || !termsOk || !captchaOk) {
             e.preventDefault();
-            var fi = document.querySelector('.fp-float.is-invalid input, .fp-float input:invalid');
-            if (fi) fi.focus();
+            if (!allValid()) {
+                var fi = document.querySelector('.fp-float.is-invalid input, .fp-float input:invalid');
+                if (fi) { fi.focus(); return; }
+            }
+            if (!termsOk) { termsWrap.scrollIntoView({behavior:'smooth', block:'center'}); return; }
+            if (!captchaOk) { alert('Silakan verifikasi reCAPTCHA terlebih dahulu.'); return; }
             return;
         }
         btn.classList.add('loading');
