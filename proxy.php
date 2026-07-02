@@ -8,6 +8,8 @@ $metaKeywords = 'mtproxy, proxy telegram, telegram proxy gratis, telecard proxy'
 // ===========================================
 // BACA DAFTAR PROXY DARI includes/proxies.txt
 // Format per baris: flag|label|server|port|secret|status
+// - flag  = kode negara ISO 3166-1 alpha-2 (contoh: us, nl, sg, id)
+//           dipakai untuk ambil gambar bendera dari flagcdn.com
 // status opsional, default 'online'
 // Baris kosong / diawali # akan diabaikan
 // ===========================================
@@ -49,8 +51,15 @@ function loadProxies(string $path): array
             $status = 'online';
         }
 
+        // Normalisasi kode negara: huruf kecil, hanya a-z, panjang 2 karakter
+        $flagCode = strtolower($flag);
+        $flagCode = preg_replace('/[^a-z]/', '', $flagCode);
+        if (strlen($flagCode) !== 2) {
+            $flagCode = ''; // kode tidak valid, nanti fallback ke placeholder
+        }
+
         $proxies[] = [
-            'flag'   => $flag,
+            'flag'   => $flagCode,
             'label'  => $label,
             'server' => $server,
             'port'   => (int) $port,
@@ -135,12 +144,31 @@ include __DIR__ . '/includes/header.php';
     border-color: rgba(42,171,238,0.35);
   }
 
+  /* ==== FLAG SEKARANG BERUPA GAMBAR, BUKAN EMOJI ==== */
   .proxy-flag {
-    font-size: 34px;
-    line-height: 1;
     flex-shrink: 0;
     width: 48px;
-    text-align: center;
+    height: 48px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .proxy-flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .proxy-flag .proxy-flag-fallback {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-dim);
   }
 
   .proxy-detail {
@@ -312,7 +340,19 @@ include __DIR__ . '/includes/header.php';
           );
         ?>
         <div class="proxy-card" data-proxy-index="<?= (int) $i ?>">
-          <div class="proxy-flag"><?= $p['flag'] ?></div>
+          <div class="proxy-flag">
+            <?php if ($p['flag'] !== ''): ?>
+              <img
+                src="https://flagcdn.com/w80/<?= htmlspecialchars($p['flag']) ?>.png"
+                srcset="https://flagcdn.com/w160/<?= htmlspecialchars($p['flag']) ?>.png 2x"
+                alt="Bendera <?= htmlspecialchars($p['label']) ?>"
+                loading="lazy"
+                onerror="this.parentElement.innerHTML='<span class=\'proxy-flag-fallback\'>?</span>';"
+              >
+            <?php else: ?>
+              <span class="proxy-flag-fallback">?</span>
+            <?php endif; ?>
+          </div>
           <div class="proxy-detail">
             <div class="proxy-detail-top">
               <span class="proxy-label"><?= htmlspecialchars($p['label']) ?></span>
