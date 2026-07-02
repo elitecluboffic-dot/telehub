@@ -3,6 +3,6 @@
 # Format: flag|label|server|port|secret|status
 # status: online / offline / maintenance (opsional)
 # ===========================================
-🇺🇸|US|hayabusa.proxy.rlwy.net|58241|e632c8d577f844c715ca0c7258700693|online
-🇳🇱|Amsterdam|hayabusa.proxy.rlwy.net|21370|37209000a7fb892cd2a9a93c7fa79625|online
-🇸🇬|Singapore|junction.proxy.rlwy.net|55036|b05a4e1ab1b0a150a5100145b105a150|online
+us|US|hayabusa.proxy.rlwy.net|58241|e632c8d577f844c715ca0c7258700693|online
+nl|Amsterdam|hayabusa.proxy.rlwy.net|21370|37209000a7fb892cd2a9a93c7fa79625|online
+sg|Singapore|junction.proxy.rlwy.net|55036|b05a4e1ab1b0a150a5100145b105a150|online
