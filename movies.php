@@ -8,6 +8,47 @@ $WORKER_URL        = "https://movie-follow-gate.internetdnsofficial.workers.dev"
 $CHANNEL_USERNAME  = "bimnihnge";      // username channel, tanpa @
 $MOVIES_FILE       = __DIR__ . "/includes/movies.txt";      // format per baris: Judul|URL
 $MOVIES_PER_PAGE   = 10;      // jumlah film per halaman
+$SESSION_LIFETIME  = 86400;   // auto-logout setelah sekian detik tanpa aktivitas (24 jam)
+
+// ============ LOGOUT MANUAL ============
+// Dipanggil kalau user klik tombol "Logout" di pojok kanan atas.
+// Menghancurkan session PHP sepenuhnya, lalu redirect ke halaman bersih
+// (tanpa query string) supaya user balik ke state "belum login".
+if (isset($_GET['logout']) && $_GET['logout'] === '1') {
+    $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    session_destroy();
+    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    exit;
+}
+
+// ============ AUTO-LOGOUT: SESSION EXPIRED KARENA INAKTIVITAS ============
+// Kalau user udah login tapi terakhir aktif lebih dari $SESSION_LIFETIME detik
+// yang lalu, hancurkan session dan lempar ke halaman dengan flag ?expired=1
+// biar frontend bisa nampilin notifikasi "sesi kamu berakhir".
+if (isset($_SESSION['tg_id'])) {
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $SESSION_LIFETIME) {
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        session_destroy();
+        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?expired=1");
+        exit;
+    }
+    // Masih dalam batas waktu, update jam aktivitas terakhir
+    $_SESSION['last_activity'] = time();
+}
 
 // ============ VERIFIKASI LOGIN TELEGRAM ============
 // Dipanggil otomatis oleh Telegram Login Widget lewat redirect ke halaman ini
@@ -15,7 +56,8 @@ if (isset($_GET['hash'])) {
     $data = $_GET;
     $hash = $data['hash'];
     unset($data['hash']);
-    unset($data['page']); // page bukan bagian dari data yang diverifikasi Telegram
+    unset($data['page']);    // page bukan bagian dari data yang diverifikasi Telegram
+    unset($data['expired']); // expired juga bukan bagian dari data yang diverifikasi Telegram
 
     $checkArr = [];
     foreach ($data as $key => $value) {
@@ -28,8 +70,9 @@ if (isset($_GET['hash'])) {
     $hmac = hash_hmac('sha256', $checkString, $secretKey);
 
     if (hash_equals($hmac, $hash) && (time() - (int)$data['auth_date']) < 86400) {
-        $_SESSION['tg_id']   = $data['id'];
-        $_SESSION['tg_name'] = $data['first_name'] ?? 'User';
+        $_SESSION['tg_id']         = $data['id'];
+        $_SESSION['tg_name']       = $data['first_name'] ?? 'User';
+        $_SESSION['last_activity'] = time();
         // Redirect biar hash gak nangkring di URL
         header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
         exit;
@@ -90,6 +133,8 @@ $basePath = strtok($_SERVER['REQUEST_URI'], '?');
 function pageUrl($basePath, $page) {
     return htmlspecialchars($basePath . '?page=' . $page);
 }
+
+$sessionExpired = isset($_GET['expired']) && $_GET['expired'] === '1';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -114,6 +159,12 @@ function pageUrl($basePath, $page) {
     --ok-bg: #10241a;
     --ok-border: #1c5c3b;
     --ok-text: #7ce6ab;
+    --danger-bg: #241010;
+    --danger-border: #6b1f1f;
+    --danger-text: #ff9a9a;
+    --expired-bg: #251018;
+    --expired-border: #6b1f3f;
+    --expired-text: #ff9ac2;
     --radius: 16px;
   }
 
@@ -145,8 +196,16 @@ function pageUrl($basePath, $page) {
   .header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 14px;
     margin-bottom: 32px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
   }
 
   .logo {
@@ -175,6 +234,28 @@ function pageUrl($basePath, $page) {
     margin-top: 2px;
   }
 
+  .logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    color: var(--danger-text);
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background .18s ease, transform .15s ease;
+  }
+
+  .logout-btn:hover {
+    background: #331515;
+    transform: translateY(-1px);
+  }
+
   .notice {
     background: var(--warn-bg);
     border: 1px solid var(--warn-border);
@@ -194,6 +275,12 @@ function pageUrl($basePath, $page) {
     background: var(--ok-bg);
     border-color: var(--ok-border);
     color: var(--ok-text);
+  }
+
+  .notice.expired {
+    background: var(--expired-bg);
+    border-color: var(--expired-border);
+    color: var(--expired-text);
   }
 
   .notice-title {
@@ -216,6 +303,12 @@ function pageUrl($basePath, $page) {
   .notice a.channel-link:hover {
     color: #7fb8ff;
     border-color: #7fb8ff;
+  }
+
+  .notice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .refresh-btn {
@@ -384,6 +477,8 @@ function pageUrl($basePath, $page) {
     body { padding: 36px 14px 60px; }
     .movie-title { max-width: 160px; }
     .page-btn span.label { display: none; }
+    .header { flex-wrap: wrap; }
+    .logout-btn span.label { display: none; }
   }
 </style>
 </head>
@@ -391,14 +486,29 @@ function pageUrl($basePath, $page) {
 <div class="wrap">
 
   <div class="header">
-    <div class="logo">🎬</div>
-    <div>
-      <h1>Daftar Film</h1>
-      <div class="subtitle">Koleksi film pilihan, khusus member channel</div>
+    <div class="header-left">
+      <div class="logo">🎬</div>
+      <div>
+        <h1>Daftar Film</h1>
+        <div class="subtitle">Koleksi film pilihan, khusus member channel</div>
+      </div>
     </div>
+    <?php if (isset($_SESSION['tg_id'])): ?>
+      <a class="logout-btn" href="<?= htmlspecialchars($basePath) ?>?logout=1" onclick="return confirm('Yakin mau logout?');">
+        <span>⎋</span><span class="label">Logout</span>
+      </a>
+    <?php endif; ?>
   </div>
 
   <?php if (!isset($_SESSION['tg_id'])): ?>
+
+    <?php if ($sessionExpired): ?>
+    <div class="notice expired">
+      <div class="notice-title">⏰ Sesi kamu udah berakhir</div>
+      <div>Kamu otomatis di-logout karena gak ada aktivitas selama 24 jam. Demi keamanan akun, silakan login ulang pake Telegram di bawah ini.</div>
+    </div>
+    <?php endif; ?>
+
     <div class="notice">
       <div class="notice-title">🔐 Login diperlukan</div>
       <div>Login pake Telegram dulu buat lanjut nonton koleksi film di bawah.</div>
@@ -422,7 +532,9 @@ function pageUrl($basePath, $page) {
         </a>
         dulu buat bisa nonton, terus refresh halaman ini.
       </div>
-      <button class="refresh-btn" onclick="location.href = '<?= htmlspecialchars($basePath) ?>?page=<?= $currentPage ?>&refresh=1'">↻ Refresh Status</button>
+      <div class="notice-actions">
+        <button class="refresh-btn" onclick="location.href = '<?= htmlspecialchars($basePath) ?>?page=<?= $currentPage ?>&refresh=1'">↻ Refresh Status</button>
+      </div>
     </div>
 
   <?php else: ?>
