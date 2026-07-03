@@ -214,6 +214,31 @@ include __DIR__ . '/includes/header.php';
 
   @keyframes pp-spin { to { transform: rotate(360deg); } }
 
+  .pp-back {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px 20px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border, rgba(255,255,255,0.12));
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+  }
+
+  .pp-back:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.2);
+  }
+
   .pp-status {
     margin-top: 16px;
     padding: 13px 15px;
@@ -299,6 +324,11 @@ include __DIR__ . '/includes/header.php';
       <span class="pp-spinner"></span>
       <span class="pp-submit-text">Order Sekarang</span>
     </button>
+
+    <a href="/proxy.php" class="pp-back" id="ppBack">
+      <span>&larr;</span>
+      <span>Kembali</span>
+    </a>
 
     <div class="pp-status" id="ppStatus"></div>
 
