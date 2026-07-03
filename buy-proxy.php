@@ -7,6 +7,9 @@ $metaKeywords = 'private proxy telegram, mtproxy private, proxy telegram berbaya
 
 $workerEndpoint = 'https://telehub-report.internetdnsofficial.workers.dev';
 
+// Ganti link ini dengan link gambar contoh tampilan promosi channel kamu
+$channelExampleImage = 'https://example.com/contoh-promosi-channel.jpg';
+
 $countries = [
     ['value' => 'us', 'flag' => 'us', 'label' => 'US'],
     ['value' => 'sg', 'flag' => 'sg', 'label' => 'Singapore'],
@@ -161,6 +164,38 @@ include __DIR__ . '/includes/header.php';
 
   .pp-input::placeholder { color: var(--text-dim); opacity: 0.7; }
   .pp-input:focus { border-color: var(--tg-blue); }
+
+  .pp-example {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed var(--border, rgba(255,255,255,0.15));
+    background: rgba(255,255,255,0.02);
+  }
+
+  .pp-example img {
+    width: 100%;
+    max-height: 320px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: rgba(0,0,0,0.25);
+  }
+
+  .pp-example-text {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-dim);
+  }
+
+  .pp-example-text strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 13px;
+  }
 
   .pp-honeypot {
     position: absolute;
@@ -324,6 +359,15 @@ include __DIR__ . '/includes/header.php';
     <div class="pp-field">
       <label class="pp-label" for="ppChannel">Channel yang ingin dipromosikan <span class="pp-optional">(opsional)</span></label>
       <input type="text" id="ppChannel" name="channel" class="pp-input" placeholder="@channelkamu">
+      <div class="pp-example">
+        <a href="<?= htmlspecialchars($channelExampleImage) ?>" target="_blank" rel="noopener">
+          <img src="<?= htmlspecialchars($channelExampleImage) ?>" alt="Contoh tampilan promosi channel" loading="lazy">
+        </a>
+        <div class="pp-example-text">
+          <strong>Contoh tampilannya nanti seperti ini</strong>
+          Channel kamu akan dipromosikan ke user proxy lain dalam bentuk seperti gambar di atas. Klik gambar untuk lihat ukuran penuh.
+        </div>
+      </div>
     </div>
 
     <div class="pp-field">
