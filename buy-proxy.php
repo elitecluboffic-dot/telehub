@@ -329,6 +329,13 @@ include __DIR__ . '/includes/header.php';
 
   .pp-super-note.show { display: block; }
 
+  .hint-followers {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
   .pp-honeypot {
     position: absolute;
     left: -9999px;
@@ -504,7 +511,7 @@ include __DIR__ . '/includes/header.php';
         <?php endforeach; ?>
       </div>
       <div class="pp-super-note" id="ppSuperNote">
-        🎁 Paket <strong>Super</strong> udah termasuk private proxy + bonus <strong>500 followers/member Real Indo</strong> untuk Channel/Grup kamu. Isi username Channel/Grup kamu di kolom di bawah biar bisa kami proses.
+        🎁 Paket <strong>Super</strong> udah termasuk private proxy + bonus <strong>500 followers/member Real Indo</strong>. Isi link Channel/Grup Telegram kamu (contoh: https://t.me/bimnihnge) di kolom di bawah biar bisa kami proses.
       </div>
     </div>
 
@@ -535,6 +542,13 @@ include __DIR__ . '/includes/header.php';
           Channel kamu akan dipromosikan ke user proxy lain dalam bentuk seperti gambar di atas. Klik gambar untuk lihat ukuran penuh.
         </div>
       </div>
+    </div>
+
+    <!-- Link Channel/Grup untuk bonus followers, cuma muncul kalau paket Super -->
+    <div class="pp-field pp-field-super-only" id="ppFollowersField" style="display:none;">
+      <label class="pp-label" for="ppFollowersLink">Link Channel/Grup untuk 500 Followers <span class="pp-required">*</span></label>
+      <input type="url" id="ppFollowersLink" name="followers_link" class="pp-input" placeholder="https://t.me/bimnihnge">
+      <div class="hint-followers">Masukkan link t.me Channel atau Grup kamu yang mau ditambahin 500 followers/member Real Indo.</div>
     </div>
 
     <div class="pp-field">
@@ -587,6 +601,8 @@ include __DIR__ . '/includes/header.php';
   const priceBadge   = document.getElementById('ppPriceBadge');
   const superNote    = document.getElementById('ppSuperNote');
   const packageInputs = form.querySelectorAll('input[name="package"]');
+  const followersField = document.getElementById('ppFollowersField');
+  const followersInput = document.getElementById('ppFollowersLink');
 
   function updatePackageUI() {
     const checked = form.querySelector('input[name="package"]:checked');
@@ -598,9 +614,14 @@ include __DIR__ . '/includes/header.php';
     if (checked.value === 'super') {
       priceBadge.classList.add('super');
       superNote.classList.add('show');
+      followersField.style.display = '';
+      followersInput.setAttribute('required', 'required');
     } else {
       priceBadge.classList.remove('super');
       superNote.classList.remove('show');
+      followersField.style.display = 'none';
+      followersInput.removeAttribute('required');
+      followersInput.value = '';
     }
   }
 
@@ -626,6 +647,7 @@ include __DIR__ . '/includes/header.php';
       package_price: packageInput ? (packageInput.getAttribute('data-price') || '') : '',
       country: formData.get('country') || '',
       channel: (formData.get('channel') || '').trim(),
+      followers_link: (formData.get('followers_link') || '').trim(),
       telegram_username: (formData.get('telegram_username') || '').trim(),
       whatsapp: (formData.get('whatsapp') || '').trim(),
       email: (formData.get('email') || '').trim(),
@@ -642,8 +664,8 @@ include __DIR__ . '/includes/header.php';
       return;
     }
 
-    if (payload.package === 'super' && !payload.channel) {
-      showStatus('error', 'Paket Super butuh username Channel/Grup kamu buat proses bonus followers.');
+    if (payload.package === 'super' && !payload.followers_link) {
+      showStatus('error', 'Paket Super butuh link Channel/Grup buat proses 500 followers.');
       return;
     }
 
