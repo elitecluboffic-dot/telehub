@@ -2,8 +2,8 @@
 session_start();
 
 // ============ KONFIGURASI (isi sesuai punya lo) ============
-$BOT_TOKEN         = "8808332749:AAFcuJwJjPO89v-cssZLwAmj83Rqc1__gyw";          // dari @BotFather, buat verifikasi login
-$BOT_USERNAME      = "RobotBimBot";          // username bot, tanpa @
+$BOT_TOKEN         = "8889368072:AAFG3ELfL0FtYkZcc8sI4qJs8iEe3L8x3GM";          // dari @BotFather, buat verifikasi login
+$BOT_USERNAME      = "MusicRobotBot";          // username bot, tanpa @
 $WORKER_URL        = "https://movie-follow-gate.internetdnsofficial.workers.dev";
 $CHANNEL_USERNAME  = "bimnihnge";      // username channel, tanpa @
 $MOVIES_FILE       = __DIR__ . "/includes/movies.txt";      // format per baris: Judul|URL
@@ -41,7 +41,16 @@ if (isset($_GET['hash'])) {
 // ============ CEK STATUS FOLLOW KE WORKER ============
 $isFollowing = false;
 if (isset($_SESSION['tg_id'])) {
-    $ch = curl_init($WORKER_URL . "/check-follow?user_id=" . urlencode($_SESSION['tg_id']));
+    // Kalau user klik tombol "Refresh Status" (?refresh=1), paksa Worker
+    // skip cache dan cek ulang langsung ke Telegram API.
+    $forceRefresh = isset($_GET['refresh']) && $_GET['refresh'] === '1';
+
+    $checkUrl = $WORKER_URL . "/check-follow?user_id=" . urlencode($_SESSION['tg_id']);
+    if ($forceRefresh) {
+        $checkUrl .= "&refresh=1";
+    }
+
+    $ch = curl_init($checkUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $response = curl_exec($ch);
@@ -413,7 +422,7 @@ function pageUrl($basePath, $page) {
         </a>
         dulu buat bisa nonton, terus refresh halaman ini.
       </div>
-      <button class="refresh-btn" onclick="location.reload()">↻ Refresh Status</button>
+      <button class="refresh-btn" onclick="location.href = '<?= htmlspecialchars($basePath) ?>?page=<?= $currentPage ?>&refresh=1'">↻ Refresh Status</button>
     </div>
 
   <?php else: ?>
