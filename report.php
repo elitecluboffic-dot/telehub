@@ -140,7 +140,7 @@ $csrfToken = $_SESSION['csrf_report'];
 // ── Fungsi kirim pesan (+ gambar opsional) lewat backend Railway ──
 function sendViaRailway(string $text, ?string $imagePath = null, ?string $imageMime = null): bool
 {
-    $backendUrl = 'https://telehub-support-production.up.railway.app/report';
+    $backendUrl = 'https://telehub-support.internetdnsofficial.workers.dev/report';
 
     $ch = curl_init($backendUrl);
 
