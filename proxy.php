@@ -123,6 +123,91 @@ include __DIR__ . '/includes/header.php';
   .proxy-info-box p { color: var(--text-dim); font-size: 13px; line-height: 1.65; }
   .proxy-info-box strong { color: var(--text); }
 
+  /* ==== BANNER PROMO PRIVATE PROXY ==== */
+  .proxy-promo-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(42,171,238,0.12) 0%, rgba(34,197,94,0.08) 100%);
+    border: 1px solid rgba(42,171,238,0.25);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+  }
+
+  .proxy-promo-icon {
+    flex-shrink: 0;
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: rgba(42,171,238,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .proxy-promo-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .proxy-promo-text strong {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .proxy-promo-text span {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .proxy-promo-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    background: linear-gradient(135deg, var(--tg-blue) 0%, #1a7fd4 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(42,171,238,0.3);
+    transition: all 0.2s;
+  }
+
+  .proxy-promo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(42,171,238,0.45);
+  }
+
+  .proxy-promo-btn svg {
+    width: 15px; height: 15px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 560px) {
+    .proxy-promo-banner {
+      flex-wrap: wrap;
+      text-align: center;
+    }
+    .proxy-promo-banner {
+      justify-content: center;
+    }
+    .proxy-promo-text {
+      flex: 1 1 100%;
+      text-align: center;
+    }
+    .proxy-promo-btn {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+  }
+
   .proxy-list {
     display: flex;
     flex-direction: column;
@@ -137,11 +222,19 @@ include __DIR__ . '/includes/header.php';
     display: flex;
     align-items: center;
     gap: 16px;
-    transition: border-color 0.2s, transform 0.2s;
+    transition: border-color 0.2s, transform 0.2s, opacity 0.2s;
   }
 
   .proxy-card:hover {
     border-color: rgba(42,171,238,0.35);
+  }
+
+  .proxy-card-inactive {
+    opacity: 0.55;
+  }
+
+  .proxy-card-inactive:hover {
+    border-color: var(--border, rgba(255,255,255,0.08));
   }
 
   /* ==== FLAG SEKARANG BERUPA GAMBAR, BUKAN EMOJI ==== */
@@ -290,6 +383,15 @@ include __DIR__ . '/includes/header.php';
     color: #4ade80;
   }
 
+  .proxy-unavailable {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    font-style: italic;
+    white-space: nowrap;
+  }
+
   @media (max-width: 560px) {
     .proxy-card {
       flex-wrap: wrap;
@@ -325,13 +427,28 @@ include __DIR__ . '/includes/header.php';
     <p><strong>Cara pakai:</strong> Klik tombol "Connect", Telegram akan terbuka otomatis dan menampilkan dialog konfirmasi. Tekan <strong>"Enable Proxy"</strong> di dalam Telegram untuk mengaktifkan koneksinya.</p>
   </div>
 
+  <div class="proxy-promo-banner">
+    <div class="proxy-promo-icon">🔒</div>
+    <div class="proxy-promo-text">
+      <strong>Butuh proxy khusus buat kamu sendiri?</strong>
+      <span>Server private, tanpa antre user lain, mulai Rp20.000/bulan.</span>
+    </div>
+    <a href="/buy-proxy.php" class="proxy-promo-btn">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+      Order Private Proxy
+    </a>
+  </div>
+
   <div class="proxy-list">
     <?php if (empty($proxies)): ?>
       <div class="proxy-empty">Belum ada server proxy tersedia saat ini.</div>
     <?php else: ?>
       <?php foreach ($proxies as $i => $p): ?>
         <?php
-          $status  = $p['status'];
+          $status    = $p['status'];
+          $isOnline  = $status === 'online';
           $webLink = sprintf(
               'https://t.me/proxy?server=%s&port=%d&secret=%s',
               rawurlencode($p['server']),
@@ -339,7 +456,7 @@ include __DIR__ . '/includes/header.php';
               rawurlencode($p['secret'])
           );
         ?>
-        <div class="proxy-card" data-proxy-index="<?= (int) $i ?>">
+        <div class="proxy-card<?= $isOnline ? '' : ' proxy-card-inactive' ?>" data-proxy-index="<?= (int) $i ?>">
           <div class="proxy-flag">
             <?php if ($p['flag'] !== ''): ?>
               <img
@@ -364,6 +481,7 @@ include __DIR__ . '/includes/header.php';
               <?= htmlspecialchars($p['server']) ?>:<?= (int) $p['port'] ?>
             </div>
           </div>
+          <?php if ($isOnline): ?>
           <div class="proxy-actions">
             <a href="<?= htmlspecialchars($webLink) ?>" class="proxy-btn proxy-btn-connect" target="_blank" rel="noopener">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -379,6 +497,11 @@ include __DIR__ . '/includes/header.php';
               <span class="copy-text">Salin</span>
             </button>
           </div>
+          <?php else: ?>
+          <div class="proxy-unavailable">
+            <?= $status === 'offline' ? 'Server sedang tidak aktif' : 'Sedang dalam perbaikan' ?>
+          </div>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     <?php endif; ?>
