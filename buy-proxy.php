@@ -2,18 +2,36 @@
 require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle    = 'Private Proxy Telegram';
-$metaDesc     = 'Order MTProxy Telegram private dari TeleCard. Pilih negara, tambahkan channel promosi (opsional), dan kami akan menghubungi kamu.';
+$metaDesc     = 'Order MTProxy Telegram private dari TeleCard. Pilih negara, pilih paket, tambahkan channel promosi (opsional), dan kami akan menghubungi kamu.';
 $metaKeywords = 'private proxy telegram, mtproxy private, proxy telegram berbayar, telecard proxy';
 
 $workerEndpoint = 'https://telehub-report.internetdnsofficial.workers.dev';
 
 // Ganti link ini dengan link gambar contoh tampilan promosi channel kamu
-$channelExampleImage = 'https://example.com/contoh-promosi-channel.jpg';
+$channelExampleImage = 'https://telehub.nfy.fyi/uploads/Proxy-Sponsor-Telegram.jpg';
 
 $countries = [
     ['value' => 'us', 'flag' => 'us', 'label' => 'US'],
     ['value' => 'sg', 'flag' => 'sg', 'label' => 'Singapore'],
     ['value' => 'nl', 'flag' => 'nl', 'label' => 'Belanda'],
+];
+
+// ── Paket: Original vs Super ──
+$packages = [
+    [
+        'value'       => 'original',
+        'label'       => 'Original',
+        'price'       => 20000,
+        'price_label' => 'Rp20.000',
+        'desc'        => 'Private proxy khusus kamu',
+    ],
+    [
+        'value'       => 'super',
+        'label'       => 'Super',
+        'price'       => 60000,
+        'price_label' => 'Rp60.000',
+        'desc'        => '+ 500 Followers/Member Real Indo untuk Channel/Grup kamu',
+    ],
 ];
 
 include __DIR__ . '/includes/header.php';
@@ -67,6 +85,13 @@ include __DIR__ . '/includes/header.php';
     font-size: 14px;
     padding: 6px 16px;
     border-radius: 99px;
+    transition: all 0.2s;
+  }
+
+  .pp-price-badge.super {
+    background: rgba(250,204,21,0.1);
+    border-color: rgba(250,204,21,0.35);
+    color: #fbbf24;
   }
 
   .pp-form {
@@ -95,6 +120,99 @@ include __DIR__ . '/includes/header.php';
 
   .pp-label .pp-required { color: #f87171; }
 
+  /* ── Paket Grid (Original / Super) ── */
+  .pp-package-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .pp-package-option { position: relative; }
+
+  .pp-package-option input {
+    position: absolute;
+    opacity: 0;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .pp-package-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.02);
+    transition: all 0.15s;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .pp-package-card .pp-package-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pp-package-card .pp-package-name {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .pp-package-card .pp-package-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: rgba(250,204,21,0.15);
+    color: #fbbf24;
+  }
+
+  .pp-package-card .pp-package-price {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--tg-blue);
+  }
+
+  .pp-package-card .pp-package-price span {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .pp-package-card .pp-package-desc {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+
+  .pp-package-option input:checked + .pp-package-card {
+    border-color: var(--tg-blue);
+    background: rgba(42,171,238,0.08);
+    box-shadow: 0 0 0 3px rgba(42,171,238,0.10);
+  }
+
+  .pp-package-option[data-pkg="super"] input:checked + .pp-package-card {
+    border-color: #fbbf24;
+    background: rgba(250,204,21,0.08);
+    box-shadow: 0 0 0 3px rgba(250,204,21,0.10);
+  }
+
+  .pp-package-option input:focus-visible + .pp-package-card {
+    outline: 2px solid var(--tg-blue);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 420px) {
+    .pp-package-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Negara ── */
   .pp-country-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -196,6 +314,20 @@ include __DIR__ . '/includes/header.php';
     margin-bottom: 2px;
     font-size: 13px;
   }
+
+  .pp-super-note {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(250,204,21,0.08);
+    border: 1px solid rgba(250,204,21,0.25);
+    color: #fbbf24;
+    font-size: 12.5px;
+    line-height: 1.55;
+    display: none;
+  }
+
+  .pp-super-note.show { display: block; }
 
   .pp-honeypot {
     position: absolute;
@@ -336,10 +468,45 @@ include __DIR__ . '/includes/header.php';
     <div class="pp-icon">🔒</div>
     <h1>Private Proxy Telegram</h1>
     <p>Server proxy khusus untuk kamu sendiri, tanpa antre bareng user lain. Isi form di bawah, tim kami akan menghubungi kamu langsung lewat Telegram.</p>
-    <div class="pp-price-badge">💰 Rp20.000 / bulan</div>
+    <div class="pp-price-badge" id="ppPriceBadge">💰 Rp20.000 / bulan</div>
   </div>
 
   <form class="pp-form" id="ppForm" novalidate>
+
+    <!-- Pilihan Paket -->
+    <div class="pp-field">
+      <label class="pp-label">Pilih Paket <span class="pp-required">*</span></label>
+      <div class="pp-package-grid">
+        <?php foreach ($packages as $i => $p): ?>
+          <label class="pp-package-option" data-pkg="<?= htmlspecialchars($p['value']) ?>">
+            <input
+              type="radio"
+              name="package"
+              value="<?= htmlspecialchars($p['value']) ?>"
+              data-price="<?= (int) $p['price'] ?>"
+              data-price-label="<?= htmlspecialchars($p['price_label']) ?>"
+              <?= $i === 0 ? 'checked' : '' ?>
+              required
+            >
+            <span class="pp-package-card">
+              <span class="pp-package-top">
+                <span class="pp-package-name"><?= htmlspecialchars($p['label']) ?></span>
+                <?php if ($p['value'] === 'super'): ?>
+                  <span class="pp-package-badge">Bonus</span>
+                <?php endif; ?>
+              </span>
+              <span class="pp-package-price">
+                <?= htmlspecialchars($p['price_label']) ?> <span>/bulan</span>
+              </span>
+              <span class="pp-package-desc"><?= htmlspecialchars($p['desc']) ?></span>
+            </span>
+          </label>
+        <?php endforeach; ?>
+      </div>
+      <div class="pp-super-note" id="ppSuperNote">
+        🎁 Paket <strong>Super</strong> udah termasuk private proxy + bonus <strong>500 followers/member Real Indo</strong> untuk Channel/Grup kamu. Isi username Channel/Grup kamu di kolom di bawah biar bisa kami proses.
+      </div>
+    </div>
 
     <div class="pp-field">
       <label class="pp-label">Pilih Negara Server <span class="pp-required">*</span></label>
@@ -414,9 +581,33 @@ include __DIR__ . '/includes/header.php';
 (function () {
   const WORKER_URL = <?= json_encode($workerEndpoint) ?>;
 
-  const form = document.getElementById('ppForm');
-  const submitBtn = document.getElementById('ppSubmit');
-  const statusBox = document.getElementById('ppStatus');
+  const form         = document.getElementById('ppForm');
+  const submitBtn    = document.getElementById('ppSubmit');
+  const statusBox    = document.getElementById('ppStatus');
+  const priceBadge   = document.getElementById('ppPriceBadge');
+  const superNote    = document.getElementById('ppSuperNote');
+  const packageInputs = form.querySelectorAll('input[name="package"]');
+
+  function updatePackageUI() {
+    const checked = form.querySelector('input[name="package"]:checked');
+    if (!checked) return;
+
+    const priceLabel = checked.getAttribute('data-price-label') || '';
+    priceBadge.textContent = '💰 ' + priceLabel + ' / bulan';
+
+    if (checked.value === 'super') {
+      priceBadge.classList.add('super');
+      superNote.classList.add('show');
+    } else {
+      priceBadge.classList.remove('super');
+      superNote.classList.remove('show');
+    }
+  }
+
+  packageInputs.forEach(function (input) {
+    input.addEventListener('change', updatePackageUI);
+  });
+  updatePackageUI(); // set state awal
 
   function showStatus(type, message) {
     statusBox.className = 'pp-status show ' + type;
@@ -428,7 +619,11 @@ include __DIR__ . '/includes/header.php';
     statusBox.className = 'pp-status';
 
     const formData = new FormData(form);
+    const packageInput = form.querySelector('input[name="package"]:checked');
+
     const payload = {
+      package: formData.get('package') || '',
+      package_price: packageInput ? (packageInput.getAttribute('data-price') || '') : '',
       country: formData.get('country') || '',
       channel: (formData.get('channel') || '').trim(),
       telegram_username: (formData.get('telegram_username') || '').trim(),
@@ -437,8 +632,18 @@ include __DIR__ . '/includes/header.php';
       website: formData.get('website') || '', // honeypot
     };
 
+    if (!payload.package) {
+      showStatus('error', 'Pilih paket dulu ya (Original / Super).');
+      return;
+    }
+
     if (!payload.telegram_username) {
       showStatus('error', 'Username Telegram wajib diisi.');
+      return;
+    }
+
+    if (payload.package === 'super' && !payload.channel) {
+      showStatus('error', 'Paket Super butuh username Channel/Grup kamu buat proses bonus followers.');
       return;
     }
 
@@ -468,6 +673,7 @@ include __DIR__ . '/includes/header.php';
       if (resp.ok && data.ok) {
         showStatus('success', 'Order berhasil dikirim! Tim kami akan menghubungi kamu lewat Telegram sebentar lagi.');
         form.reset();
+        updatePackageUI();
       } else {
         showStatus('error', data.error || 'Terjadi kesalahan, coba lagi beberapa saat.');
       }
