@@ -54,6 +54,7 @@ include __DIR__ . '/includes/header.php';
           <div class="article-card-author">✍️ <?= clean($a['author_name']) ?></div>
           <div class="article-card-date"><?= date('d M Y', strtotime($a['created_at'])) ?></div>
         </div>
+        <div class="article-card-views" style="color:var(--text-dim);font-size:12px;margin-top:4px">👁️ <?= number_format($a['views'] ?? 0) ?> views</div>
         <button class="article-card-btn">Baca Selengkapnya →</button>
       </div>
     </a>
