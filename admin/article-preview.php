@@ -15,11 +15,15 @@ include __DIR__ . '/includes/admin_header.php';
     <a href="article-action.php?id=<?= $a['id'] ?>&action=approve" style="color:#000;font-weight:bold">Approve</a> |
     <a href="articles.php" style="color:#000">Kembali</a>
   </div>
+  <?php if (!empty($a['image_path'])): ?>
+    <img class="article-detail-cover" src="<?= UPLOAD_URL . clean($a['image_path']) ?>" alt="<?= clean($a['title']) ?>">
+  <?php endif; ?>
   <div class="article-card-cat"><?= clean($a['category']) ?></div>
   <h1 class="article-detail-title"><?= clean($a['title']) ?></h1>
   <div class="article-detail-meta">
     <span>✍️ <?= clean($a['author_name']) ?></span>
     <span>🗓️ <?= date('d F Y', strtotime($a['created_at'])) ?></span>
+    <span>👁️ <?= number_format($a['views'] ?? 0) ?> views</span>
   </div>
   <div class="article-detail-body" style="margin-top:24px">
     <?= nl2br(clean($a['content'])) ?>
