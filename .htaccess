@@ -47,11 +47,12 @@ Options -Indexes
     RewriteRule ^ - [F,L]
 </IfModule>
 
-# ── Blokir akses langsung ke folder includes/ ────────────────────
+# ── Blokir akses langsung ke folder includes/ dan data/ ──────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^includes/ - [F,L]
     RewriteRule ^admin/includes/ - [F,L]
+    RewriteRule ^data/ - [F,L]
 </IfModule>
 
 # ── Blokir akses langsung ke file sensitif ───────────────────────
