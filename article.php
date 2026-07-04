@@ -22,27 +22,32 @@ if (isBotVisitor()) {
     }
 }
 
-// ===== ARTIKEL SEBELUMNYA & SESUDAHNYA (berdasarkan created_at, kronologis) =====
-// "Prev" = artikel yang lebih lama (created_at lebih kecil), diambil yang paling dekat
-// "Next" = artikel yang lebih baru (created_at lebih besar), diambil yang paling dekat
+// Tanggal efektif yang dipakai untuk tampilan & pengurutan: kapan artikel benar-benar
+// tayang ke publik (approved_at). Fallback ke created_at untuk artikel lama yang
+// di-approve sebelum kolom approved_at ada (masih NULL).
+$effectiveDate = $a['approved_at'] ?? $a['created_at'];
+
+// ===== ARTIKEL SEBELUMNYA & SESUDAHNYA (berdasarkan approved_at, kronologis) =====
+// "Prev" = artikel yang lebih lama (tanggal tayang lebih kecil), diambil yang paling dekat
+// "Next" = artikel yang lebih baru (tanggal tayang lebih besar), diambil yang paling dekat
 $prevStmt = $pdo->prepare(
     "SELECT slug, title, image_path FROM articles
      WHERE status = 'approved'
-       AND (created_at < ? OR (created_at = ? AND id < ?))
-     ORDER BY created_at DESC, id DESC
+       AND (COALESCE(approved_at, created_at) < ? OR (COALESCE(approved_at, created_at) = ? AND id < ?))
+     ORDER BY COALESCE(approved_at, created_at) DESC, id DESC
      LIMIT 1"
 );
-$prevStmt->execute([$a['created_at'], $a['created_at'], $a['id']]);
+$prevStmt->execute([$effectiveDate, $effectiveDate, $a['id']]);
 $prevArticle = $prevStmt->fetch();
 
 $nextStmt = $pdo->prepare(
     "SELECT slug, title, image_path FROM articles
      WHERE status = 'approved'
-       AND (created_at > ? OR (created_at = ? AND id > ?))
-     ORDER BY created_at ASC, id ASC
+       AND (COALESCE(approved_at, created_at) > ? OR (COALESCE(approved_at, created_at) = ? AND id > ?))
+     ORDER BY COALESCE(approved_at, created_at) ASC, id ASC
      LIMIT 1"
 );
-$nextStmt->execute([$a['created_at'], $a['created_at'], $a['id']]);
+$nextStmt->execute([$effectiveDate, $effectiveDate, $a['id']]);
 $nextArticle = $nextStmt->fetch();
 
 $pageTitle = $a['title'];
@@ -161,7 +166,7 @@ include __DIR__ . '/includes/header.php';
     <h1 class="article-detail-title"><?= clean($a['title']) ?></h1>
     <div class="article-detail-meta">
       <span>✍️ <?= clean($a['author_name']) ?></span>
-      <span>🗓️ <?= date('d M Y', strtotime($a['created_at'])) ?></span>
+      <span>🗓️ <?= date('d M Y', strtotime($effectiveDate)) ?></span>
       <span>👁️ <?= number_format($a['views'] ?? 0) ?> views</span>
       <div class="article-card-cat"><?= clean($a['category']) ?></div>
     </div>
