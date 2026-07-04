@@ -17,13 +17,14 @@ $submissions = $stmt->fetchAll();
 
 $counts = $pdo->query("SELECT status, COUNT(*) c FROM card_submissions GROUP BY status")->fetchAll(PDO::FETCH_KEY_PAIR);
 $totalUsers = $pdo->query("SELECT COUNT(*) c FROM users")->fetch()['c'];
+$articleViews = $pdo->query("SELECT COALESCE(SUM(views),0) v, COALESCE(SUM(bot_views),0) b FROM articles")->fetch();
 
 include __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($s = flash('success')): ?><div class="alert alert-success" style="margin-top:24px"><?= clean($s) ?></div><?php endif; ?>
 
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px;">
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:24px;">
   <div class="dash-card" style="padding:20px">
     <h3 style="margin:0 0 6px;font-size:28px"><?= $totalUsers ?></h3>
     <span style="color:var(--text-dim);font-size:13px">Total User</span>
@@ -39,6 +40,11 @@ include __DIR__ . '/includes/admin_header.php';
   <div class="dash-card" style="padding:20px">
     <h3 style="margin:0 0 6px;font-size:28px;color:var(--red)"><?= $counts['rejected'] ?? 0 ?></h3>
     <span style="color:var(--text-dim);font-size:13px">Rejected</span>
+  </div>
+  <div class="dash-card" style="padding:20px">
+    <h3 style="margin:0 0 6px;font-size:28px;color:var(--tg-blue)"><?= number_format($articleViews['v']) ?></h3>
+    <span style="color:var(--text-dim);font-size:13px">Views Artikel</span>
+    <div style="color:var(--text-dim);font-size:11px;margin-top:4px">🤖 <?= number_format($articleViews['b']) ?> bot</div>
   </div>
 </div>
 
@@ -108,7 +114,7 @@ include __DIR__ . '/includes/admin_header.php';
 
 <style>
 @media (max-width: 640px) {
-  div[style*="repeat(4,1fr)"] {
+  div[style*="repeat(5,1fr)"] {
     grid-template-columns: repeat(2,1fr) !important;
   }
 }
