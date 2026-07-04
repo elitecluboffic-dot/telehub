@@ -7,10 +7,13 @@ $success = false;
 $categories = ['Tips & Trik', 'Komunitas', 'Channel', 'Grup', 'Tutorial', 'Berita', 'Lainnya'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title   = clean($_POST['title'] ?? '');
+    // PENTING: jangan pakai clean() (htmlspecialchars) di sini.
+    // Simpan teks apa adanya ke DB, escape-nya dilakukan pas nampilin (output),
+    // bukan pas nyimpen (input) — biar '&' gak jadi '&amp;' dobel.
+    $title   = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');
-    $author  = clean($_POST['author_name'] ?? '');
-    $cat     = clean($_POST['category'] ?? '');
+    $author  = trim($_POST['author_name'] ?? '');
+    $cat     = trim($_POST['category'] ?? '');
     $image_path = null;
 
     if (!$title || !$content || !$author || !$cat) {
@@ -70,7 +73,7 @@ include __DIR__ . '/includes/header.php';
       <a href="submit-article.php" class="btn btn-outline" style="margin-left:8px">Tulis Lagi</a>
     </div>
   <?php else: ?>
-    <?php if ($error): ?><div class="alert alert-error"><?= $error ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="alert alert-error"><?= clean($error) ?></div><?php endif; ?>
     <form method="post" enctype="multipart/form-data" class="submit-article-form">
       <div class="form-group">
         <label>Judul Artikel <span style="color:var(--red)">*</span></label>
@@ -86,7 +89,7 @@ include __DIR__ . '/includes/header.php';
           <select name="category" required>
             <option value="">-- Pilih Kategori --</option>
             <?php foreach ($categories as $cat): ?>
-              <option value="<?= $cat ?>" <?= (($_POST['category'] ?? '') == $cat) ? 'selected' : '' ?>><?= $cat ?></option>
+              <option value="<?= clean($cat) ?>" <?= (($_POST['category'] ?? '') == $cat) ? 'selected' : '' ?>><?= clean($cat) ?></option>
             <?php endforeach; ?>
           </select>
         </div>
