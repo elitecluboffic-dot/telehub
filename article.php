@@ -8,6 +8,21 @@ if (!$a) {
     header('Location: articles.php');
     exit;
 }
+
+// ===== VIEW TRACKING =====
+if (isBotVisitor()) {
+    $pdo->prepare("UPDATE articles SET bot_views = bot_views + 1 WHERE id = ?")
+        ->execute([$a['id']]);
+} else {
+    $sessionKey = 'viewed_article_' . $a['id'];
+    if (empty($_SESSION[$sessionKey]) || (time() - $_SESSION[$sessionKey]) > 1800) {
+        $pdo->prepare("UPDATE articles SET views = views + 1 WHERE id = ?")
+            ->execute([$a['id']]);
+        $_SESSION[$sessionKey] = time();
+        $a['views'] = ($a['views'] ?? 0) + 1; // sinkronkan tampilan di request ini
+    }
+}
+
 $pageTitle = $a['title'];
 $metaDesc = clean(mb_strimwidth(strip_tags($a['content']), 0, 160, '...'));
 $metaKeywords = $a['category'] . ', artikel telegram, telecard';
@@ -22,6 +37,7 @@ include __DIR__ . '/includes/header.php';
     <div class="article-detail-meta">
       <span>✍️ <?= clean($a['author_name']) ?></span>
       <span>🗓️ <?= date('d M Y', strtotime($a['created_at'])) ?></span>
+      <span>👁️ <?= number_format($a['views'] ?? 0) ?> views</span>
       <div class="article-card-cat"><?= clean($a['category']) ?></div>
     </div>
   </div>
