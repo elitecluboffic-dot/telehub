@@ -31,13 +31,15 @@ if ($page > $totalPages) {
     $offset = ($page - 1) * $perPage;
 }
 
+// Urutkan berdasarkan approved_at (kapan artikel benar-benar tayang ke publik).
+// Fallback ke created_at untuk artikel lama yang di-approve sebelum kolom approved_at ada (masih NULL).
 $sql = "SELECT * FROM articles WHERE status='approved'";
 $params = [];
 if ($category) {
     $sql .= " AND category = ?";
     $params[] = $category;
 }
-$sql .= " ORDER BY created_at DESC LIMIT $perPage OFFSET $offset";
+$sql .= " ORDER BY COALESCE(approved_at, created_at) DESC LIMIT $perPage OFFSET $offset";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $articles = $stmt->fetchAll();
@@ -74,6 +76,7 @@ include __DIR__ . '/includes/header.php';
     </div>
   <?php endif; ?>
   <?php foreach ($articles as $a): ?>
+    <?php $displayDate = $a['approved_at'] ?? $a['created_at']; ?>
     <a href="article.php?slug=<?= urlencode($a['slug']) ?>" class="article-card-profile">
       <div class="article-card-header">
         <?php if (!empty($a['image_path'])): ?>
@@ -88,7 +91,7 @@ include __DIR__ . '/includes/header.php';
         <p class="article-card-description"><?= clean(mb_strimwidth(strip_tags($a['content']), 0, 120, '...')) ?></p>
         <div class="article-card-footer">
           <div class="article-card-author">✍️ <?= clean($a['author_name']) ?></div>
-          <div class="article-card-date"><?= date('d M Y', strtotime($a['created_at'])) ?></div>
+          <div class="article-card-date"><?= date('d M Y', strtotime($displayDate)) ?></div>
         </div>
         <div class="article-card-views" style="color:var(--text-dim);font-size:12px;margin-top:4px">👁️ <?= number_format($a['views'] ?? 0) ?> views</div>
         <button class="article-card-btn">Baca Selengkapnya →</button>
