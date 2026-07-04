@@ -106,3 +106,23 @@ function badgeColorByType($type) {
         default:        return '#2AABEE';
     }
 }
+
+/**
+ * Deteksi apakah request datang dari bot/crawler berdasarkan User-Agent.
+ * Dipakai untuk memisahkan hitungan views artikel (human vs bot).
+ */
+function isBotVisitor() {
+    $ua = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+    if ($ua === '') return true; // tidak ada UA = biasanya bot/script
+
+    $botPatterns = [
+        'bot', 'crawl', 'spider', 'slurp', 'facebookexternalhit',
+        'whatsapp', 'telegrambot', 'discordbot', 'preview', 'headless',
+        'googlebot', 'bingbot', 'yandex', 'duckduckbot', 'ahrefsbot',
+        'semrushbot', 'mj12bot', 'petalbot', 'curl', 'wget', 'python-requests'
+    ];
+    foreach ($botPatterns as $p) {
+        if (strpos($ua, $p) !== false) return true;
+    }
+    return false;
+}
