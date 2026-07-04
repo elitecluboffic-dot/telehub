@@ -9,6 +9,12 @@ $metaKeywords = 'laporan, bug, masalah, report, telecard';
 $success = false;
 $error   = '';
 
+// ── Deteksi apakah ini request AJAX (fetch/XHR dari form report) ──
+$isAjax = (
+    (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
+);
+
 // ── Rate limiting sederhana via session ──
 if (!isset($_SESSION['report_count'])) {
     $_SESSION['report_count']    = 0;
@@ -41,7 +47,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Kamu terlalu sering mengirim laporan. Tunggu beberapa menit sebelum mencoba lagi.';
     }
 
+    // ── Verifikasi Google reCAPTCHA v2 ──
     else {
+        $recaptchaToken = $_POST['g-recaptcha-response'] ?? '';
+
+        if (!$recaptchaToken) {
+            $error = 'Silakan centang captcha "Saya bukan robot" terlebih dahulu.';
+        } else {
+            $verify = @file_get_contents(
+                'https://www.google.com/recaptcha/api/siteverify?secret=' . urlencode(RECAPTCHA_SECRET_KEY)
+                . '&response=' . urlencode($recaptchaToken)
+                . '&remoteip=' . urlencode($_SERVER['REMOTE_ADDR'] ?? '')
+            );
+            $verifyResult = json_decode($verify, true);
+
+            if (empty($verifyResult['success'])) {
+                $error = 'Verifikasi captcha gagal. Silakan coba lagi.';
+            }
+        }
+    }
+
+    if (!$error) {
         $jenis       = trim($_POST['jenis']       ?? '');
         $judul       = trim($_POST['judul']       ?? '');
         $deskripsi   = trim($_POST['deskripsi']   ?? '');
@@ -128,6 +154,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Gagal mengirim laporan. Silakan coba lagi dalam beberapa saat.';
             }
         }
+    }
+
+    // ── Kalau request AJAX, balas JSON saja dan berhenti di sini ──
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => $success,
+            'error'   => $error,
+        ]);
+        exit;
     }
 }
 
@@ -238,6 +274,7 @@ include __DIR__ . '/includes/header.php';
     border: 1px solid var(--border, rgba(255,255,255,0.08));
     border-radius: 20px;
     padding: 36px 32px;
+    position: relative;
   }
 
   @media (max-width: 480px) {
@@ -563,6 +600,68 @@ include __DIR__ . '/includes/header.php';
   @media (max-width: 420px) {
     .success-actions { flex-direction: column; }
   }
+
+  /* ===== Loading Overlay (real progress, nempel ke xhr.upload) ===== */
+  .report-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,20,0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    z-index: 20;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .report-loading-overlay.show {
+    display: flex;
+  }
+
+  .report-spinner {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 3.5px solid rgba(42,171,238,0.18);
+    border-top-color: var(--tg-blue);
+    animation: report-spin 0.8s linear infinite;
+  }
+
+  @keyframes report-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .report-loading-text {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .report-loading-sub {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: -10px;
+  }
+
+  .report-progress-track {
+    width: 200px;
+    height: 6px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.1);
+    overflow: hidden;
+  }
+
+  .report-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--tg-blue), #1a7fd4);
+    border-radius: 99px;
+    transition: width 0.15s ease-out;
+  }
 </style>
 
 <div class="report-wrap">
@@ -573,40 +672,53 @@ include __DIR__ . '/includes/header.php';
     <p>Temukan bug, konten bermasalah, atau punya saran?<br>Laporan kamu langsung masuk ke tim TeleCard.</p>
   </div>
 
-  <?php if ($success): ?>
-    <div class="alert alert-success">
-      <span class="alert-icon">✅</span>
-      <div>
-        <strong>Laporan berhasil dikirim!</strong><br>
-        Terima kasih sudah melaporkan. Tim TeleCard akan menindaklanjuti laporan kamu secepatnya.
+  <div id="reportResultBox">
+    <?php if ($success): ?>
+      <div class="alert alert-success">
+        <span class="alert-icon">✅</span>
+        <div>
+          <strong>Laporan berhasil dikirim!</strong><br>
+          Terima kasih sudah melaporkan. Tim TeleCard akan menindaklanjuti laporan kamu secepatnya.
+        </div>
       </div>
-    </div>
 
-    <div class="success-actions">
-      <a href="index.php" class="btn-home">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-        Kembali ke Beranda
-      </a>
-      <a href="report.php" class="btn-again">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        Kirim Laporan Lain
-      </a>
-    </div>
-  <?php endif; ?>
+      <div class="success-actions">
+        <a href="index.php" class="btn-home">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Kembali ke Beranda
+        </a>
+        <a href="report.php" class="btn-again">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Kirim Laporan Lain
+        </a>
+      </div>
+    <?php endif; ?>
 
-  <?php if ($error): ?>
-    <div class="alert alert-error">
-      <span class="alert-icon">⚠️</span>
-      <div><?= htmlspecialchars($error) ?></div>
-    </div>
-  <?php endif; ?>
+    <?php if ($error): ?>
+      <div class="alert alert-error" id="reportErrorAlert">
+        <span class="alert-icon">⚠️</span>
+        <div><?= htmlspecialchars($error) ?></div>
+      </div>
+    <?php endif; ?>
+  </div>
 
   <?php if (!$success): ?>
-  <div class="report-card">
+  <div class="report-card" id="reportCard">
+
+    <!-- Overlay loading real, progress-nya ngikutin upload asli (xhr.upload.onprogress) -->
+    <div class="report-loading-overlay" id="reportLoadingOverlay">
+      <div class="report-spinner"></div>
+      <div class="report-loading-text" id="reportLoadingText">Mengirim laporan...</div>
+      <div class="report-progress-track">
+        <div class="report-progress-fill" id="reportProgressFill"></div>
+      </div>
+      <div class="report-loading-sub" id="reportLoadingSub">0%</div>
+    </div>
+
     <form method="POST" action="report.php" autocomplete="off" enctype="multipart/form-data" id="reportForm">
       <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfToken) ?>">
 
@@ -727,6 +839,11 @@ include __DIR__ . '/includes/header.php';
         <div class="hint">Isi kalau kamu ingin dihubungi balik soal laporan ini</div>
       </div>
 
+      <!-- reCAPTCHA v2 -->
+      <div class="form-group">
+        <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars(RECAPTCHA_SITE_KEY) ?>"></div>
+      </div>
+
       <!-- Submit -->
       <button type="submit" class="btn-report" id="reportSubmitBtn">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -741,6 +858,7 @@ include __DIR__ . '/includes/header.php';
 
 </div>
 
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
 (function () {
     var input      = document.getElementById('gambar');
@@ -753,10 +871,16 @@ include __DIR__ . '/includes/header.php';
     var submitBtn  = document.getElementById('reportSubmitBtn');
     var submitText = document.getElementById('reportSubmitText');
 
+    var overlay     = document.getElementById('reportLoadingOverlay');
+    var progressFill= document.getElementById('reportProgressFill');
+    var loadingText = document.getElementById('reportLoadingText');
+    var loadingSub  = document.getElementById('reportLoadingSub');
+    var resultBox   = document.getElementById('reportResultBox');
+
     var MAX_SIZE = 5 * 1024 * 1024;
     var ALLOWED  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-    if (!input) return;
+    if (!input || !form) return;
 
     function showError(msg) {
         errorEl.textContent = msg;
@@ -826,9 +950,130 @@ include __DIR__ . '/includes/header.php';
         }
     });
 
-    form.addEventListener('submit', function () {
+    function setProgress(pct) {
+        pct = Math.max(0, Math.min(100, Math.round(pct)));
+        progressFill.style.width = pct + '%';
+        loadingSub.textContent = pct + '%';
+    }
+
+    function renderError(msg) {
+        var html = '<div class="alert alert-error" id="reportErrorAlert">'
+                 + '<span class="alert-icon">⚠️</span>'
+                 + '<div>' + msg.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>'
+                 + '</div>';
+        resultBox.innerHTML = html;
+        resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Reset reCAPTCHA biar user bisa centang ulang setelah gagal
+        if (window.grecaptcha) {
+            try { grecaptcha.reset(); } catch (e) {}
+        }
+    }
+
+    function renderSuccess() {
+        var html = ''
+          + '<div class="alert alert-success">'
+          + '  <span class="alert-icon">✅</span>'
+          + '  <div><strong>Laporan berhasil dikirim!</strong><br>'
+          + '  Terima kasih sudah melaporkan. Tim TeleCard akan menindaklanjuti laporan kamu secepatnya.</div>'
+          + '</div>'
+          + '<div class="success-actions">'
+          + '  <a href="index.php" class="btn-home">'
+          + '    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">'
+          + '      <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>'
+          + '    </svg>'
+          + '    Kembali ke Beranda'
+          + '  </a>'
+          + '  <a href="report.php" class="btn-again">'
+          + '    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">'
+          + '      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>'
+          + '    </svg>'
+          + '    Kirim Laporan Lain'
+          + '  </a>'
+          + '</div>';
+        resultBox.innerHTML = html;
+
+        var card = document.getElementById('reportCard');
+        if (card) card.remove();
+
+        resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // ── Validasi captcha di sisi client dulu sebelum kirim ──
+        if (window.grecaptcha) {
+            var captchaValue = grecaptcha.getResponse();
+            if (!captchaValue) {
+                renderError('Silakan centang captcha "Saya bukan robot" terlebih dahulu.');
+                return;
+            }
+        }
+
+        var formData = new FormData(form);
+        var xhr = new XMLHttpRequest();
+
+        xhr.open('POST', form.action, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        // Tampilkan overlay loading (real, nempel ke xhr)
+        overlay.classList.add('show');
         submitBtn.setAttribute('disabled', 'disabled');
-        submitText.textContent = 'Mengirim...';
+        loadingText.textContent = 'Mengunggah data...';
+        setProgress(0);
+
+        // ── Progress upload asli (bukan animasi palsu) ──
+        xhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable) {
+                var pct = (e.loaded / e.total) * 100;
+                setProgress(pct);
+                if (pct >= 100) {
+                    loadingText.textContent = 'Memproses laporan...';
+                }
+            }
+        });
+
+        xhr.upload.addEventListener('load', function () {
+            setProgress(100);
+            loadingText.textContent = 'Memproses laporan...';
+        });
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) return;
+
+            overlay.classList.remove('show');
+            submitBtn.removeAttribute('disabled');
+            submitText.textContent = 'Kirim Laporan';
+
+            if (xhr.status !== 200) {
+                renderError('Gagal mengirim laporan. Silakan coba lagi dalam beberapa saat.');
+                return;
+            }
+
+            var res;
+            try {
+                res = JSON.parse(xhr.responseText);
+            } catch (err) {
+                renderError('Terjadi kesalahan tak terduga. Silakan coba lagi.');
+                return;
+            }
+
+            if (res.success) {
+                renderSuccess();
+            } else {
+                renderError(res.error || 'Gagal mengirim laporan. Silakan coba lagi.');
+            }
+        };
+
+        xhr.onerror = function () {
+            overlay.classList.remove('show');
+            submitBtn.removeAttribute('disabled');
+            submitText.textContent = 'Kirim Laporan';
+            renderError('Koneksi terputus. Periksa jaringan kamu dan coba lagi.');
+        };
+
+        xhr.send(formData);
     });
 })();
 </script>
