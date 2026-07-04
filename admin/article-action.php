@@ -7,9 +7,18 @@ if ($id && in_array($action, ['approve','reject','delete'])) {
     if ($action === 'delete') {
         $pdo->prepare("DELETE FROM articles WHERE id = ?")->execute([$id]);
         flash('success', 'Artikel berhasil dihapus.');
+    } elseif ($action === 'approve') {
+        // Set approved_at = waktu sekarang, hanya saat status BENAR-BENAR berubah jadi approved.
+        // Ini yang jadi acuan tanggal tayang & urutan artikel di halaman publik,
+        // bukan created_at (waktu submit).
+        $pdo->prepare("UPDATE articles SET status = 'approved', approved_at = NOW() WHERE id = ?")
+            ->execute([$id]);
+        flash('success', 'Status artikel berhasil diperbarui.');
     } else {
-        $status = $action === 'approve' ? 'approved' : 'rejected';
-        $pdo->prepare("UPDATE articles SET status = ? WHERE id = ?")->execute([$status, $id]);
+        // Reject: approved_at dikosongkan lagi. Kalau suatu saat artikel ini
+        // di-approve ulang, dia bakal dapat approved_at baru sesuai waktu approve yang baru.
+        $pdo->prepare("UPDATE articles SET status = 'rejected', approved_at = NULL WHERE id = ?")
+            ->execute([$id]);
         flash('success', 'Status artikel berhasil diperbarui.');
     }
 }
