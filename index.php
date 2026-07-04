@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/visitor_counter.php';
 require_once __DIR__ . '/ipguard/IPGuard.php';
 (new IPGuard())->protect();
 $pageTitle = 'Beranda';
@@ -129,6 +130,30 @@ include __DIR__ . '/includes/header.php';
     transition: opacity 0.4s ease;
   }
   body.loading-active { overflow: hidden; }
+
+  /* ── Total Pengunjung ── */
+  .visitor-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 18px auto 0;
+    padding: 8px 18px;
+    background: rgba(42, 171, 238, 0.08);
+    border: 1px solid rgba(42, 171, 238, 0.25);
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-size: 13px;
+    width: fit-content;
+  }
+  .visitor-count .visitor-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+  .visitor-count strong {
+    color: var(--tg-blue);
+    font-weight: 700;
+    font-size: 14px;
+  }
 </style>
 
 <!-- Background Carousel 3D -->
@@ -341,6 +366,11 @@ document.body.classList.add('loading-active');
       <input type="text" name="q" placeholder="Cari channel, grup, atau user Telegram...">
       <button type="submit">Cari</button>
     </form>
+    <div style="display:flex; justify-content:center;">
+      <div class="visitor-count">
+        <span class="visitor-icon">👥</span> Total Pengunjung: <strong><?= number_format($totalVisitors) ?></strong>
+      </div>
+    </div>
   </div>
   <h2 style="margin-top:50px;">Card Terbaru</h2>
   <div class="card-grid">
