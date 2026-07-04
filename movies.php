@@ -11,9 +11,6 @@ $MOVIES_PER_PAGE   = 10;      // jumlah film per halaman
 $SESSION_LIFETIME  = 86400;   // auto-logout setelah sekian detik tanpa aktivitas (24 jam)
 
 // ============ LOGOUT MANUAL ============
-// Dipanggil kalau user klik tombol "Logout" di pojok kanan atas.
-// Menghancurkan session PHP sepenuhnya, lalu redirect ke halaman bersih
-// (tanpa query string) supaya user balik ke state "belum login".
 if (isset($_GET['logout']) && $_GET['logout'] === '1') {
     $_SESSION = [];
     if (ini_get("session.use_cookies")) {
@@ -29,9 +26,6 @@ if (isset($_GET['logout']) && $_GET['logout'] === '1') {
 }
 
 // ============ AUTO-LOGOUT: SESSION EXPIRED KARENA INAKTIVITAS ============
-// Kalau user udah login tapi terakhir aktif lebih dari $SESSION_LIFETIME detik
-// yang lalu, hancurkan session dan lempar ke halaman dengan flag ?expired=1
-// biar frontend bisa nampilin notifikasi "sesi kamu berakhir".
 if (isset($_SESSION['tg_id'])) {
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $SESSION_LIFETIME) {
         $_SESSION = [];
@@ -46,18 +40,16 @@ if (isset($_SESSION['tg_id'])) {
         header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?expired=1");
         exit;
     }
-    // Masih dalam batas waktu, update jam aktivitas terakhir
     $_SESSION['last_activity'] = time();
 }
 
 // ============ VERIFIKASI LOGIN TELEGRAM ============
-// Dipanggil otomatis oleh Telegram Login Widget lewat redirect ke halaman ini
 if (isset($_GET['hash'])) {
     $data = $_GET;
     $hash = $data['hash'];
     unset($data['hash']);
-    unset($data['page']);    // page bukan bagian dari data yang diverifikasi Telegram
-    unset($data['expired']); // expired juga bukan bagian dari data yang diverifikasi Telegram
+    unset($data['page']);
+    unset($data['expired']);
 
     $checkArr = [];
     foreach ($data as $key => $value) {
@@ -73,7 +65,6 @@ if (isset($_GET['hash'])) {
         $_SESSION['tg_id']         = $data['id'];
         $_SESSION['tg_name']       = $data['first_name'] ?? 'User';
         $_SESSION['last_activity'] = time();
-        // Redirect biar hash gak nangkring di URL
         header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
         exit;
     } else {
@@ -84,8 +75,6 @@ if (isset($_GET['hash'])) {
 // ============ CEK STATUS FOLLOW KE WORKER ============
 $isFollowing = false;
 if (isset($_SESSION['tg_id'])) {
-    // Kalau user klik tombol "Refresh Status" (?refresh=1), paksa Worker
-    // skip cache dan cek ulang langsung ke Telegram API.
     $forceRefresh = isset($_GET['refresh']) && $_GET['refresh'] === '1';
 
     $checkUrl = $WORKER_URL . "/check-follow?user_id=" . urlencode($_SESSION['tg_id']);
@@ -191,6 +180,23 @@ $sessionExpired = isset($_GET['expired']) && $_GET['expired'] === '1';
   .wrap {
     max-width: 780px;
     margin: 0 auto;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: color .18s ease, transform .15s ease;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+    transform: translateX(-2px);
   }
 
   .header {
@@ -484,6 +490,10 @@ $sessionExpired = isset($_GET['expired']) && $_GET['expired'] === '1';
 </head>
 <body>
 <div class="wrap">
+
+  <a class="back-link" href="/index.php">
+    <span>←</span><span>Kembali ke Beranda</span>
+  </a>
 
   <div class="header">
     <div class="header-left">
