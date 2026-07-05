@@ -23,14 +23,28 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
-  overflow-x: hidden;
 }
 
-html { overflow-x: hidden; }
+/*
+  PENTING: "overflow-x: hidden" pada html/body SENGAJA DIHAPUS.
+  Ini adalah bug klasik di browser mobile (Chrome Android & Safari iOS):
+  overflow (termasuk overflow-x) pada <html>/<body> merusak elemen
+  "position: fixed" -- elemen fixed jadi ikut ke-scroll bareng konten,
+  padahal CSS-nya sudah benar "fixed". Ini kenapa background carousel 3D
+  di index.php ikut turun pas di-scroll di HP.
+
+  Proteksi anti horizontal-scroll tetap ada, tapi dipindah ke elemen
+  spesifik (lihat .page-content, .dash-card, .auth-wrap, dst di bawah
+  dan di media query mobile), bukan di level html/body secara global.
+*/
 
 a { color: inherit; text-decoration: none; }
 
 .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+/* Wrapper konten halaman (dipakai di index.php dkk) -- proteksi
+   anti horizontal-scroll dipindah ke sini, bukan di html/body */
+.page-content { overflow-x: hidden; }
 
 /* NAVBAR */
 .navbar {
@@ -243,7 +257,25 @@ table.simple th { color: var(--text-dim); font-weight: 700; font-size: 12.5px; t
 .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius); max-width: 100%; }
 
 /* FOOTER */
-footer { text-align: center; padding: 30px 0; color: var(--text-dim); font-size: 13px; border-top: 1px solid var(--border); margin-top: 40px; }
+footer {
+  text-align: center; padding: 30px 0; color: var(--text-dim); font-size: 13px;
+  border-top: 1px solid var(--border); margin-top: 40px;
+  position: relative; z-index: 10; background: var(--bg);
+  overflow: hidden;
+}
+footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #ff7a00;
+  clip-path: polygon(62% 0, 100% 0, 100% 100%, 47% 100%);
+  pointer-events: none;
+}
+footer .container {
+  position: relative;
+  z-index: 1;
+}
 
 /* ===== ARTIKEL ===== */
 .article-hero { text-align: center; padding: 60px 0 30px; }
