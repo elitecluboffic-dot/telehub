@@ -46,6 +46,14 @@ $articles = $stmt->fetchAll();
 
 $categories = $pdo->query("SELECT DISTINCT category FROM articles WHERE status='approved' ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
 
+// ============================
+// CAROUSEL ARTIKEL TERBARU (strip horizontal auto-slide di atas, independen dari filter & pagination)
+// ============================
+$carouselLimit = 10; // jumlah artikel yang muncul di strip atas
+$carouselStmt = $pdo->prepare("SELECT * FROM articles WHERE status='approved' ORDER BY COALESCE(approved_at, created_at) DESC LIMIT $carouselLimit");
+$carouselStmt->execute();
+$carouselArticles = $carouselStmt->fetchAll();
+
 // Helper buat bikin URL pagination sambil pertahanin filter kategori
 function buildPageUrl($pageNum, $category) {
     $params = ['page' => $pageNum];
@@ -60,6 +68,134 @@ include __DIR__ . '/includes/header.php';
   <p>Artikel seputar Telegram dan tips mengelola channel, ditulis langsung oleh komunitas TeleCard. Punya pengalaman atau tips? Yuk, tulis dan kirim artikelmu!</p>
   <a href="submit-article.php" class="btn btn-primary">✍️ Tulis Artikel</a>
 </div>
+
+<?php if (!empty($carouselArticles)): ?>
+<style>
+  /* ============================
+     CAROUSEL ARTIKEL TERBARU (strip horizontal, auto-slide, TANPA gambar)
+     ============================ */
+  .latest-carousel-wrap {
+    position: relative;
+    margin-top: 32px;
+  }
+  .latest-carousel-track {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    padding: 4px 4px 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox: sembunyikan scrollbar */
+    -ms-overflow-style: none; /* IE/Edge lama: sembunyikan scrollbar */
+  }
+  .latest-carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Edge: sembunyikan scrollbar sepenuhnya (termasuk tombol panahnya) */
+  }
+
+  .latest-carousel-card {
+    flex: 0 0 260px;
+    max-width: 260px;
+    scroll-snap-align: start;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.15s, border-color 0.15s;
+    display: flex;
+    flex-direction: column;
+  }
+  .latest-carousel-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--tg-blue, #2AABEE);
+  }
+  .latest-carousel-body { padding: 16px 16px 18px; }
+  .latest-carousel-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tg-blue, #2AABEE);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .latest-carousel-cardtitle {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .latest-carousel-date {
+    font-size: 12px;
+    color: var(--text-dim, #888);
+  }
+
+  @media (max-width: 768px) {
+    .latest-carousel-card { flex: 0 0 220px; max-width: 220px; }
+  }
+</style>
+
+<div class="latest-carousel-wrap">
+  <div class="latest-carousel-track" id="latestCarouselTrack">
+    <?php
+      // Duplikat list artikel biar looping auto-slide terasa "tak berujung"
+      $loopArticles = array_merge($carouselArticles, $carouselArticles);
+      foreach ($loopArticles as $a):
+    ?>
+      <?php $displayDate = $a['approved_at'] ?? $a['created_at']; ?>
+      <a href="article.php?slug=<?= urlencode($a['slug']) ?>" class="latest-carousel-card">
+        <div class="latest-carousel-body">
+          <div class="latest-carousel-badge"><?= clean($a['category']) ?></div>
+          <h3 class="latest-carousel-cardtitle"><?= clean($a['title']) ?></h3>
+          <div class="latest-carousel-date"><?= date('d M Y', strtotime($displayDate)) ?></div>
+        </div>
+      </a>
+    <?php endforeach; ?>
+  </div>
+</div>
+
+<script>
+(function() {
+  const track = document.getElementById('latestCarouselTrack');
+  if (!track) return;
+
+  let autoSlideTimer = null;
+  const AUTO_SLIDE_INTERVAL = 3000; // geser tiap 3 detik
+  const SCROLL_STEP = 280; // kira-kira lebar 1 card + gap
+
+  function startAutoSlide() {
+    stopAutoSlide();
+    autoSlideTimer = setInterval(() => {
+      // Kalau udah mepet ujung (karena list di-duplikat 2x), balik ke awal biar looping mulus
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      if (track.scrollLeft >= maxScroll - 5) {
+        track.scrollTo({ left: 0, behavior: 'instant' });
+      } else {
+        track.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
+      }
+    }, AUTO_SLIDE_INTERVAL);
+  }
+
+  function stopAutoSlide() {
+    if (autoSlideTimer) clearInterval(autoSlideTimer);
+  }
+
+  // Pause otomatis saat user hover / sentuh (misal mau baca dulu), lanjut lagi setelah selesai
+  track.addEventListener('mouseenter', stopAutoSlide);
+  track.addEventListener('mouseleave', startAutoSlide);
+  track.addEventListener('touchstart', stopAutoSlide, { passive: true });
+  track.addEventListener('touchend', () => setTimeout(startAutoSlide, 2000), { passive: true });
+
+  startAutoSlide();
+})();
+</script>
+<?php endif; ?>
+
 <?php if (!empty($categories)): ?>
 <div class="filters" style="margin-top:24px">
   <a href="articles.php" class="filter-chip <?= $category=='' ? 'active' : '' ?>">Semua</a>
