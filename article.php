@@ -18,18 +18,12 @@ if (isBotVisitor()) {
         $pdo->prepare("UPDATE articles SET views = views + 1 WHERE id = ?")
             ->execute([$a['id']]);
         $_SESSION[$sessionKey] = time();
-        $a['views'] = ($a['views'] ?? 0) + 1; // sinkronkan tampilan di request ini
+        $a['views'] = ($a['views'] ?? 0) + 1;
     }
 }
 
-// Tanggal efektif yang dipakai untuk tampilan & pengurutan: kapan artikel benar-benar
-// tayang ke publik (approved_at). Fallback ke created_at untuk artikel lama yang
-// di-approve sebelum kolom approved_at ada (masih NULL).
 $effectiveDate = $a['approved_at'] ?? $a['created_at'];
 
-// ===== ARTIKEL SEBELUMNYA & SESUDAHNYA (berdasarkan approved_at, kronologis) =====
-// "Prev" = artikel yang lebih lama (tanggal tayang lebih kecil), diambil yang paling dekat
-// "Next" = artikel yang lebih baru (tanggal tayang lebih besar), diambil yang paling dekat
 $prevStmt = $pdo->prepare(
     "SELECT slug, title, image_path FROM articles
      WHERE status = 'approved'
@@ -53,6 +47,7 @@ $nextArticle = $nextStmt->fetch();
 $pageTitle = $a['title'];
 $metaDesc = clean(mb_strimwidth(strip_tags($a['content']), 0, 160, '...'));
 $metaKeywords = $a['category'] . ', artikel telegram, telecard';
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -156,6 +151,21 @@ include __DIR__ . '/includes/header.php';
       text-align: left;
     }
   }
+
+  /* KOTAK IKLAN MANUAL */
+  .ad-slot {
+    margin: 28px 0;
+    padding: 18px;
+    border: 1.5px dashed var(--border, rgba(255,255,255,0.15));
+    border-radius: 14px;
+    background: rgba(255,255,255,0.02);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim, #888);
+    font-size: 13px;
+  }
 </style>
 
 <div class="article-detail-wrap">
@@ -173,6 +183,11 @@ include __DIR__ . '/includes/header.php';
   </div>
   <div class="article-detail-body">
     <?= nl2br(clean($a['content'])) ?>
+  </div>
+
+  <!-- KOTAK IKLAN MANUAL - isi sendiri kode iklan di sini nanti -->
+  <div class="ad-slot">
+    Ruang Iklan
   </div>
 
   <div class="article-nav">
