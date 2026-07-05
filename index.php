@@ -178,6 +178,21 @@ include __DIR__ . '/includes/header.php';
   </div>
 </div>
 
+<script>
+  // FAILSAFE: pastikan #bgCarousel jadi anak langsung dari <body>,
+  // bukan ke-nest di dalam .container (dari header.php) atau elemen
+  // lain apapun. Ini menghilangkan kemungkinan ancestor manapun
+  // (misal transform/filter/overflow yang belum sempat diupdate)
+  // merusak "position: fixed", sehingga background carousel dijamin
+  // diam di tempat walau halaman di-scroll.
+  (function () {
+    const bg = document.getElementById('bgCarousel');
+    if (bg && bg.parentElement !== document.body) {
+      document.body.insertBefore(bg, document.body.firstChild);
+    }
+  })();
+</script>
+
 <!-- Loader -->
 <div id="pageLoader">
   <canvas id="particleCanvas"></canvas>
