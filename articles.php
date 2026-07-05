@@ -81,16 +81,21 @@ include __DIR__ . '/includes/header.php';
   .latest-carousel-track {
     display: flex;
     gap: 18px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
+    overflow: hidden;
     padding: 4px 4px 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox: sembunyikan scrollbar */
-    -ms-overflow-style: none; /* IE/Edge lama: sembunyikan scrollbar */
   }
-  .latest-carousel-track::-webkit-scrollbar {
-    display: none; /* Chrome/Safari/Edge: sembunyikan scrollbar sepenuhnya (termasuk tombol panahnya) */
+  .latest-carousel-track-inner {
+    display: flex;
+    gap: 18px;
+    animation: latestCarouselScroll 40s linear infinite;
+    width: max-content;
+  }
+  .latest-carousel-wrap:hover .latest-carousel-track-inner {
+    animation-play-state: paused; /* pause halus saat mouse di atas, biar bisa dibaca */
+  }
+  @keyframes latestCarouselScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); } /* geser sampai setengah, karena list di-duplikat 2x */
   }
 
   .latest-carousel-card {
@@ -142,8 +147,9 @@ include __DIR__ . '/includes/header.php';
 
 <div class="latest-carousel-wrap">
   <div class="latest-carousel-track" id="latestCarouselTrack">
+    <div class="latest-carousel-track-inner">
     <?php
-      // Duplikat list artikel biar looping auto-slide terasa "tak berujung"
+      // Duplikat list artikel 2x biar animasi loop terlihat "tak berujung" tanpa jeda/patah
       $loopArticles = array_merge($carouselArticles, $carouselArticles);
       foreach ($loopArticles as $a):
     ?>
@@ -156,44 +162,11 @@ include __DIR__ . '/includes/header.php';
         </div>
       </a>
     <?php endforeach; ?>
+    </div>
   </div>
 </div>
 
-<script>
-(function() {
-  const track = document.getElementById('latestCarouselTrack');
-  if (!track) return;
 
-  let autoSlideTimer = null;
-  const AUTO_SLIDE_INTERVAL = 3000; // geser tiap 3 detik
-  const SCROLL_STEP = 280; // kira-kira lebar 1 card + gap
-
-  function startAutoSlide() {
-    stopAutoSlide();
-    autoSlideTimer = setInterval(() => {
-      // Kalau udah mepet ujung (karena list di-duplikat 2x), balik ke awal biar looping mulus
-      const maxScroll = track.scrollWidth - track.clientWidth;
-      if (track.scrollLeft >= maxScroll - 5) {
-        track.scrollTo({ left: 0, behavior: 'instant' });
-      } else {
-        track.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
-      }
-    }, AUTO_SLIDE_INTERVAL);
-  }
-
-  function stopAutoSlide() {
-    if (autoSlideTimer) clearInterval(autoSlideTimer);
-  }
-
-  // Pause otomatis saat user hover / sentuh (misal mau baca dulu), lanjut lagi setelah selesai
-  track.addEventListener('mouseenter', stopAutoSlide);
-  track.addEventListener('mouseleave', startAutoSlide);
-  track.addEventListener('touchstart', stopAutoSlide, { passive: true });
-  track.addEventListener('touchend', () => setTimeout(startAutoSlide, 2000), { passive: true });
-
-  startAutoSlide();
-})();
-</script>
 <?php endif; ?>
 
 <?php if (!empty($categories)): ?>
