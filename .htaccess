@@ -25,33 +25,51 @@ Options -Indexes
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 </IfModule>
 
-# ── Blokir request dari luar domain lo ──────────────────────────
+# ── Blokir request pakai Host header palsu ───────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteCond %{HTTP_HOST} !^telehub\.nfy\.fyi$ [NC]
-    RewriteRule ^ - [F,L]
-    RewriteCond %{HTTP:Origin} !^$
-    RewriteCond %{HTTP:Origin} !^https?://telehub\.nfy\.fyi$ [NC]
-    RewriteRule ^ - [F,L]
-    RewriteCond %{HTTP:Referer} !^$
-    RewriteCond %{HTTP:Referer} !^https?://telehub\.nfy\.fyi [NC]
     RewriteRule ^ - [F,L]
 </IfModule>
 
-# ── Blokir cURL, bot, scraper ────────────────────────────────────
+# ── Blokir cURL, bot, scraper (bukan AI assistant, ini aman) ─────
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteCond %{HTTP_USER_AGENT} ^-?$ [NC]
     RewriteRule ^ - [F,L]
+
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteCond %{HTTP_USER_AGENT} (curl|wget|python-requests|python-urllib|libwww-perl|scrapy|nikto|sqlmap|nmap|masscan|zgrab|nuclei|dirbuster|gobuster|hydra|burpsuite) [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# ── Blokir Referer/Origin asing HANYA untuk endpoint sensitif ────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteCond %{REQUEST_URI} ^/(proxy|submission|article-action|verify)\.php$ [NC]
+    RewriteCond %{HTTP:Origin} !^$
+    RewriteCond %{HTTP:Origin} !^https?://telehub\.nfy\.fyi$ [NC]
+    RewriteRule ^ - [F,L]
+
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteCond %{REQUEST_URI} ^/(proxy|submission|article-action|verify)\.php$ [NC]
+    RewriteCond %{HTTP:Referer} !^$
+    RewriteCond %{HTTP:Referer} !^https?://telehub\.nfy\.fyi [NC]
     RewriteRule ^ - [F,L]
 </IfModule>
 
 # ── Blokir akses langsung ke folder includes/ dan data/ ──────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^includes/ - [F,L]
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^admin/includes/ - [F,L]
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^data/ - [F,L]
 </IfModule>
 
@@ -72,7 +90,7 @@ Options -Indexes
     Header always set X-Content-Type-Options "nosniff"
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self' https://telehub.nfy.fyi; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.gstatic.cn https://telegram.org https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.adnow.com https://*.ads1-adnow.com https://*.ads7-adnow.com; frame-src 'self' https://www.google.com https://recaptcha.google.com https://oauth.telegram.org https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com; img-src 'self' data: https://www.gstatic.com https://flagcdn.com https://t.me https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com; connect-src 'self' https://api.telegram.org https://www.google.com https://*.workers.dev https://*.up.railway.app https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com"
+    Header always set Content-Security-Policy "default-src 'self' https://telehub.nfy.fyi; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://www.gstatic.cn https://telegram.org https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com https://*.adnow.com https://*.ads1-adnow.com https://*.ads7-adnow.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://www.google.com https://recaptcha.google.com https://oauth.telegram.org https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com; img-src 'self' data: https://www.gstatic.com https://flagcdn.com https://t.me https://*.workers.dev https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com; connect-src 'self' https://api.telegram.org https://www.google.com https://*.workers.dev https://*.up.railway.app https://*.adnow.com https://*.uutew.info https://*.ads1-adnow.com https://*.ads7-adnow.com"
     Header always edit Set-Cookie (.*) "$1; SameSite=Strict; Secure"
 </IfModule>
 
