@@ -15,6 +15,9 @@ define('DB_PASS', 'Labibganteng11');
 define('GMAIL_EMAIL', 'elitecluboffic@gmail.com');
 define('GMAIL_APP_PASSWORD', 'qdreohfwjdioffsk');
 
+// --- Image Compresson Resize telehub.nfy.fyi ---
+define('IMAGE_COMPRESSOR_WORKER_URL', 'https://telehub-image-compressor-production.up.railway.app');
+
 // --- Google reCAPTCHA v2 ---
 define('RECAPTCHA_SITE_KEY', '6LdMLz8tAAAAAFtQYHcq_B_IqW0e77pZkHbODVaR');
 define('RECAPTCHA_SECRET_KEY', '6LdMLz8tAAAAABEemO48e9W_Mxtc5oe-Gc5iLFMa');
