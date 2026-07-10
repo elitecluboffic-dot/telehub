@@ -35,6 +35,7 @@ require __DIR__ . '/includes/admin_header.php';
 .photo-admin-body .t{font-size:13px;font-weight:600;margin-bottom:2px;color:#f2f2f2}
 .photo-admin-body .u{font-size:11px;color:rgba(255,255,255,.5);font-family:monospace}
 .photo-admin-body .d{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
+.photo-admin-body .ai-reason{font-size:11px;color:#8ab4f8;margin-top:6px;font-style:italic;line-height:1.4}
 .photo-admin-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:999px;margin-bottom:8px;font-weight:600}
 .photo-admin-badge.pending{background:rgba(255,193,7,.18);color:#ffcf4d}
 .photo-admin-badge.approved{background:rgba(13,122,69,.25);color:#4ade80}
@@ -67,6 +68,7 @@ require __DIR__ . '/includes/admin_header.php';
 }
 .photo-preview-caption .t{font-weight:600;font-size:14px;margin-bottom:4px}
 .photo-preview-caption .u{color:#aaa;font-family:monospace;font-size:11px}
+.photo-preview-caption .ai{color:#8ab4f8;font-size:11.5px;margin-top:6px;font-style:italic}
 .photo-preview-close{
   position:absolute;top:-18px;right:-18px;width:36px;height:36px;border-radius:50%;
   background:#fff;color:#111;border:none;font-size:18px;font-weight:700;cursor:pointer;
@@ -109,6 +111,7 @@ require __DIR__ . '/includes/admin_header.php';
     <div class="photo-preview-caption">
       <div class="t" id="previewTitle"></div>
       <div class="u" id="previewMeta"></div>
+      <div class="ai" id="previewAiReason" style="display:none"></div>
     </div>
     <button class="photo-preview-nav next" id="previewNext" title="Berikutnya">&#8250;</button>
   </div>
@@ -124,6 +127,15 @@ let previewIndex = -1;
 
 function authHeaders(){
   return { 'X-Admin-Token': ADMIN_TOKEN };
+}
+
+/* ---- ambil alasan singkat dari moderation_reason, buang prefix teknisnya
+   ("ai-flagged-safe: " / "ai-flagged-unsafe: ") biar yang tampil ke admin
+   cuma alasannya doang, bukan kode internal. ---- */
+function extractAiReason(p){
+  if (!p || !p.moderation_reason) return '';
+  const m = String(p.moderation_reason).match(/^ai-flagged-(?:safe|unsafe):\s*(.+)$/i);
+  return m ? m[1].trim() : '';
 }
 
 async function loadPhotos(status){
@@ -147,6 +159,7 @@ function renderCard(p, idx){
   const div = document.createElement('div');
   div.className = 'photo-admin-card';
   const badgeLabel = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak' }[p.status];
+  const aiReason = extractAiReason(p);
   div.innerHTML = `
     <img src="${API_BASE}/photos/${p.filename}" alt="" data-idx="${idx}">
     <div class="photo-admin-body">
@@ -154,6 +167,7 @@ function renderCard(p, idx){
       <div class="t">${p.title ? p.title : 'Tanpa judul'}</div>
       <div class="u">${p.uploader_name ? '@'+p.uploader_name : 'anonim'} · ${p.ip || '-'}</div>
       <div class="d">${p.uploaded_at}</div>
+      ${aiReason ? `<div class="ai-reason">AI: "${aiReason}"</div>` : ''}
       <div class="photo-admin-actions"></div>
     </div>`;
 
@@ -198,14 +212,15 @@ async function refreshCounts(){
 }
 
 /* ===== Preview Modal Logic ===== */
-const previewOverlay = document.getElementById('previewOverlay');
-const previewImg     = document.getElementById('previewImg');
-const previewTitle   = document.getElementById('previewTitle');
-const previewMeta    = document.getElementById('previewMeta');
-const previewClose   = document.getElementById('previewClose');
-const previewPrev    = document.getElementById('previewPrev');
-const previewNext    = document.getElementById('previewNext');
-const previewInner   = document.getElementById('previewInner');
+const previewOverlay  = document.getElementById('previewOverlay');
+const previewImg      = document.getElementById('previewImg');
+const previewTitle    = document.getElementById('previewTitle');
+const previewMeta     = document.getElementById('previewMeta');
+const previewAiReason = document.getElementById('previewAiReason');
+const previewClose    = document.getElementById('previewClose');
+const previewPrev     = document.getElementById('previewPrev');
+const previewNext     = document.getElementById('previewNext');
+const previewInner    = document.getElementById('previewInner');
 
 function openPreview(idx){
   if (!currentPhotos.length) return;
@@ -220,6 +235,15 @@ function renderPreview(){
   previewImg.src = `${API_BASE}/photos/${p.filename}`;
   previewTitle.textContent = p.title ? p.title : 'Tanpa judul';
   previewMeta.textContent = `${p.uploader_name ? '@'+p.uploader_name : 'anonim'} · ${p.ip || '-'} · ${p.uploaded_at}`;
+
+  const aiReason = extractAiReason(p);
+  if (aiReason){
+    previewAiReason.textContent = `AI: "${aiReason}"`;
+    previewAiReason.style.display = 'block';
+  } else {
+    previewAiReason.style.display = 'none';
+  }
+
   previewPrev.style.display = currentPhotos.length > 1 ? 'flex' : 'none';
   previewNext.style.display = currentPhotos.length > 1 ? 'flex' : 'none';
 }
