@@ -547,7 +547,7 @@ input.field-input:focus{outline:none;border-color:var(--accent);box-shadow:inset
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
-const API_BASE = 'https://public-poto-api.internetdnsofficial.workers.dev';
+const API_BASE = 'https://api.telehub.web.id';
 
 const gallery = document.getElementById('gallery');
 const rollCount = document.getElementById('rollCount');
