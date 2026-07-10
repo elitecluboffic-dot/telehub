@@ -15,7 +15,7 @@ if (!isAdminLoggedIn()) {
  * Untuk sekarang aku taruh langsung di sini biar gampang — GANTI sebelum production.
  */
 const WORKER_ADMIN_TOKEN = 'd0d942c6492c409ba28cc5901a59dee1827a15740bd096bdd73e47e8b1a8ce55';
-const WORKER_API_BASE = 'https://public-poto-api.internetdnsofficial.workers.dev';
+const WORKER_API_BASE = 'https://api.telehub.web.id';
 
 $pageTitle = 'Kelola Foto';
 require __DIR__ . '/includes/admin_header.php';
