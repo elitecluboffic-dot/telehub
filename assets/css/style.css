@@ -42,6 +42,15 @@ a { color: inherit; text-decoration: none; }
 
 .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 
+/* FIX: navbar full width, mentok sampai ke tepi layar -- tanpa max-width.
+   PENTING: markup navbar-nya adalah <div class="navbar container"> --
+   dua class nempel di elemen yang SAMA (bukan nested), makanya
+   selector-nya .navbar.container (tanpa spasi), bukan .navbar > .container */
+.navbar.container {
+  max-width: none;
+  width: 100%;
+}
+
 /* Wrapper konten halaman (dipakai di index.php dkk) -- proteksi
    anti horizontal-scroll dipindah ke sini, bukan di html/body */
 .page-content { overflow-x: hidden; }
@@ -612,6 +621,9 @@ footer .container {
 @media (max-width: 640px) {
   /* GLOBAL SAFETY NET - cegah elemen form/card overflow horizontal di mobile */
   .container { padding: 0 16px; }
+
+  /* Reset navbar container di mobile supaya tetap konsisten dengan .container biasa */
+  .navbar.container { max-width: 100%; }
 
   .dash-card,
   .dash-card *,
