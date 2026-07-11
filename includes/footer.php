@@ -20,9 +20,11 @@
       <!-- KANAN (desktop) / BAWAH (mobile): Link -->
       <div class="footer-links-col">
         <div class="footer-link-list">
-          <a href="<?= SITE_URL ?>/submit-article.php">✍️ Tulis Artikel</a>
+          <a href="<?= SITE_URL ?>/public-poto.php">📸 Public Poto</a>
           <a href="<?= SITE_URL ?>/comments.php">💬 Komentar &amp; Rating</a>
           <a href="<?= SITE_URL ?>/report.php">🛠️ Support</a>
+          <a href="<?= SITE_URL ?>/movies.php">👁️‍🗨️ Movie</a>
+          <a href="<?= SITE_URL ?>/proxy.php">🛡️ Proxy</a>
         </div>
       </div>
 
