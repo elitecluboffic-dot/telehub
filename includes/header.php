@@ -43,8 +43,6 @@ $user = isLoggedIn() ? currentUser() : null;
     <a href="<?= SITE_URL ?>/index.php">Beranda</a>
     <a href="<?= SITE_URL ?>/cards.php">Jelajahi Card</a>
     <a href="<?= SITE_URL ?>/articles.php">News</a>
-    <a href="<?= SITE_URL ?>/proxy.php">Proxy</a>
-    <a href="<?= SITE_URL ?>/movies.php">Movie</a>
     <?php if ($user): ?>
       <a href="<?= SITE_URL ?>/dashboard.php">Dashboard</a>
       <a href="<?= SITE_URL ?>/logout.php" class="btn btn-outline btn-sm">Logout (<?= clean($user['username']) ?>)</a>
@@ -65,8 +63,6 @@ $user = isLoggedIn() ? currentUser() : null;
   <a href="<?= SITE_URL ?>/index.php" onclick="closeMobileMenu()">🏠 Beranda</a>
   <a href="<?= SITE_URL ?>/cards.php" onclick="closeMobileMenu()">🔍 Jelajahi Card</a>
   <a href="<?= SITE_URL ?>/articles.php" onclick="closeMobileMenu()">📢 News</a>
-  <a href="<?= SITE_URL ?>/proxy.php" onclick="closeMobileMenu()">🛡️ Proxy</a>
-  <a href="<?= SITE_URL ?>/movies.php" onclick="closeMobileMenu()">👁️‍🗨️ Movie</a>
   <?php if ($user): ?>
     <a href="<?= SITE_URL ?>/dashboard.php" onclick="closeMobileMenu()">📊 Dashboard</a>
     <a href="<?= SITE_URL ?>/logout.php">🚪 Logout (<?= clean($user['username']) ?>)</a>
