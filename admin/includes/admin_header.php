@@ -21,6 +21,7 @@ $isAdminLoggedIn = isAdminLoggedIn();
     <a href="<?= SITE_URL ?>/admin/dashboard.php">Dashboard</a>
     <a href="<?= SITE_URL ?>/admin/articles.php">Artikel</a>
     <a href="<?= SITE_URL ?>/admin/photos.php">Foto</a>
+    <a href="<?= SITE_URL ?>/admin/premium-codes.php">Generate Premium Foto</a>
     <a href="<?= SITE_URL ?>/admin/logout.php" class="btn btn-sm" style="background:linear-gradient(90deg,#ff0000,#ff7700,#ffff00,#00ff00,#0000ff,#8b00ff);color:white;border:none">Logout</a>
   </nav>
   <button class="navbar-toggle" onclick="toggleAdminMenu()" aria-label="Menu">
@@ -35,6 +36,7 @@ $isAdminLoggedIn = isAdminLoggedIn();
   <a href="<?= SITE_URL ?>/admin/dashboard.php" onclick="closeAdminMenu()">📊 Dashboard</a>
   <a href="<?= SITE_URL ?>/admin/articles.php" onclick="closeAdminMenu()">📝 Artikel</a>
   <a href="<?= SITE_URL ?>/admin/photos.php" onclick="closeAdminMenu()">🖼️ Foto</a>
+  <a href="<?= SITE_URL ?>/admin/premium-codes.php" onclick="closeAdminMenu()">👑 Generate Premium Foto</a>
   <a href="<?= SITE_URL ?>/admin/logout.php">🚪 Logout</a>
 </div>
 <script>
