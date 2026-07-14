@@ -421,6 +421,32 @@ input.field-input:focus{outline:none;border-color:var(--accent);box-shadow:inset
 .lightbox-close:hover{border-color:var(--accent);color:var(--accent);transform:rotate(90deg)}
 
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+    
+
+.prem-bar{max-width:640px;margin:0 auto 8px;padding:0 24px;text-align:center}
+.prem-badge-active{display:inline-flex;align-items:center;gap:8px;background:rgba(76,201,138,.12);color:#4cc98a;
+  border:1px solid rgba(76,201,138,.3);padding:9px 18px;border-radius:999px;font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;letter-spacing:.04em}
+.prem-cta-btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,138,0,.12);color:var(--accent2);
+  border:1px solid rgba(255,138,0,.35);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;
+  cursor:pointer;font-family:'Inter',sans-serif;transition:transform .15s ease, background .15s ease}
+.prem-cta-btn:hover{transform:translateY(-2px);background:rgba(255,138,0,.2)}
+
+.prem-modal .modal{max-width:420px}
+.prem-price{text-align:center;margin:6px 0 20px}
+.prem-price .amount{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:38px;color:var(--paper)}
+.prem-price .per{font-size:12.5px;color:var(--text-dim)}
+.prem-benefits{list-style:none;padding:0;margin:0 0 22px;font-size:13px;color:var(--text-dim);line-height:2}
+.prem-benefits li::before{content:'✓ ';color:#4cc98a;font-weight:700}
+.prem-wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;
+  background:#25D366;color:#08130c;border:none;border-radius:7px;font-weight:700;font-size:14px;
+  text-decoration:none;cursor:pointer;box-shadow:0 8px 18px rgba(37,211,102,.28)}
+.prem-wa-btn:hover{filter:brightness(1.05)}
+.prem-divider-text{text-align:center;color:var(--text-dim);font-size:11.5px;margin:20px 0 14px;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
+.prem-redeem-row{display:flex;gap:8px}
+.prem-redeem-row input{flex:1}
+.prem-redeem-row button{background:var(--accent);color:#fff;border:none;padding:0 18px;border-radius:7px;font-weight:600;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -467,6 +493,17 @@ input.field-input:focus{outline:none;border-color:var(--accent);box-shadow:inset
   </div>
   <div class="roll-count" id="rollCount">memuat rol…</div>
 </div>
+  
+  
+   <div class="prem-bar" id="premBar" style="display:none">
+  <span class="prem-badge-active" id="premBadgeActive"></span>
+</div>
+<div class="prem-bar" id="premCtaBar">
+  <button class="prem-cta-btn" id="openPremium">⭐ Upgrade Premium</button>
+</div> 
+    
+    
+    
 
 <div class="divider"></div>
 
@@ -538,6 +575,37 @@ input.field-input:focus{outline:none;border-color:var(--accent);box-shadow:inset
     </form>
   </div>
 </div>
+    
+    
+    
+    <div class="modal-backdrop prem-modal" id="premiumModal">
+  <div class="modal">
+    <button class="modal-close" id="closePremium">&times;</button>
+    <span class="eyebrow2">Telehub Premium</span>
+    <h2 class="disp">Upload Bebas</h2>
+    <div class="prem-price">
+      <div class="amount">Rp50.000</div>
+      <div class="per">/ bulan</div>
+    </div>
+    <ul class="prem-benefits">
+      <li>Upload foto tanpa batas harian</li>
+      <li>Tetap lewat moderasi otomatis yang sama</li>
+      <li>Aktif langsung setelah redeem kode</li>
+      <li>1 User/ip - no Multi</li>
+    </ul>
+    <a class="prem-wa-btn" href="https://wa.me/17036187872?text=Halo%2C%20saya%20mau%20beli%20Telehub%20Premium" target="_blank" rel="noopener">
+      💬 Beli via WhatsApp
+    </a>
+    <div class="prem-divider-text">Sudah punya kode?</div>
+    <div class="prem-redeem-row">
+      <input class="field-input" type="text" id="redeemCodeInput" placeholder="cth: AB3D-9F2K-7Q1M" maxlength="20">
+      <button id="redeemBtn">Redeem</button>
+    </div>
+    <div class="notice" id="redeemNotice"></div>
+  </div>
+</div>
+    
+    
 
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" id="closeLightbox">&times;</button>
@@ -1186,6 +1254,72 @@ document.getElementById('uploadForm').addEventListener('submit', function (e) {
   fd.set('photo', chosenFile);
 
   doUpload(fd, captchaValue, 0);
+});
+    
+
+
+/* ================= PREMIUM ================= */
+const premiumModal   = document.getElementById('premiumModal');
+const premBar        = document.getElementById('premBar');
+const premBadgeActive = document.getElementById('premBadgeActive');
+const premCtaBar      = document.getElementById('premCtaBar');
+const redeemNotice    = document.getElementById('redeemNotice');
+
+document.getElementById('openPremium').addEventListener('click', () => premiumModal.classList.add('open'));
+document.getElementById('closePremium').addEventListener('click', () => premiumModal.classList.remove('open'));
+premiumModal.addEventListener('click', (e) => { if (e.target === premiumModal) premiumModal.classList.remove('open'); });
+
+function fmtDateID(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+}
+
+async function checkPremiumStatus(){
+  try {
+    const res = await fetch(`${API_BASE}/api/premium/status`);
+    const data = await res.json();
+    if (data.ok && data.premium){
+      premBar.style.display = 'block';
+      premCtaBar.style.display = 'none';
+      premBadgeActive.textContent = '⭐ Premium aktif sampai ' + fmtDateID(data.expires_at);
+    } else {
+      premBar.style.display = 'none';
+      premCtaBar.style.display = 'block';
+    }
+  } catch(e){ /* diamkan, biarkan tombol CTA default tampil */ }
+}
+checkPremiumStatus();
+
+document.getElementById('redeemBtn').addEventListener('click', async () => {
+  const codeInput = document.getElementById('redeemCodeInput');
+  const code = codeInput.value.trim();
+  redeemNotice.className = 'notice';
+  if (!code){
+    redeemNotice.textContent = 'Masukkan kode dulu.';
+    redeemNotice.className = 'notice err';
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/redeem`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if (data.ok){
+      redeemNotice.textContent = 'Premium aktif sampai ' + fmtDateID(data.expires_at) + '!';
+      redeemNotice.className = 'notice ok';
+      codeInput.value = '';
+      checkPremiumStatus();
+      setTimeout(() => { premiumModal.classList.remove('open'); redeemNotice.className = 'notice'; }, 2000);
+    } else {
+      redeemNotice.textContent = data.error || 'Kode gagal diredeem.';
+      redeemNotice.className = 'notice err';
+    }
+  } catch(e){
+    redeemNotice.textContent = 'Gagal menghubungi server. Coba lagi.';
+    redeemNotice.className = 'notice err';
+  }
 });
 </script>
 </body>
